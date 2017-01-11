@@ -22,6 +22,12 @@ Usage
 
 Coming soon! Look at the example in ./test
 
+References
+----------
+.. [1] NetCDF4 API documentation.
+       http://unidata.github.io/netcdf4-python/
+.. [2] CF Conventions and Metadata. http://cfconventions.org/
+
 License information
 -------------------
 
