@@ -45,14 +45,14 @@ data = {'lat': lats,
 # the object_pairs_hook keyword argument can be removed.
 nc_config = json.load(open("./example_nc_config.json", "r"), object_pairs_hook=OrderedDict)
 # Call ncgen
-ncgen('all_data_ex.nc', data, nc_config, override=True)
+ncgen('all_data_ex.nc', data, nc_config, clobber=True)
 
 # Second example: We don't have all our data or we will append in time
 data = {'lat': lats,
         'lon': lons}
 
 nc_config = json.load(open("./example_nc_config_timeUnlimited.json", "r"), object_pairs_hook=OrderedDict)
-nc_fid = ncgen('unlimited_time_ex.nc', data, nc_config, return_instance=True, override=True)
+nc_fid = ncgen('unlimited_time_ex.nc', data, nc_config, return_instance=True, clobber=True)
 # ncgen returns an instance of the NetCDF file.
 # To write to the unlimited dimensions, use a procedure like
 # the one provided below.
