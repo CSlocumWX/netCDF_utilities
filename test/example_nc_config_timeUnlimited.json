@@ -1,0 +1,45 @@
+{
+    "variables": {
+        "pwat": {
+            "units": "kg m-2", 
+            "long_name": "precipitable water in mass per unit area; forecast", 
+            "standard_name": "atmosphere_mass_content_of_water_vapor", 
+            "dim": [
+                "time", 
+                "latitude", 
+                "longitude"
+            ], 
+            "dtype": "float64"
+        }
+    }, 
+    "global_attributes": {
+        "source": "example_generate_netcdf_file.py", 
+        "Conventions": "CF-1.6", 
+        "institution": "Colorado State University", 
+        "title": "Example NetCDF file"
+    }, 
+    "dimensions": {
+        "latitude": {
+            "units": "degrees_north", 
+            "long_name": "latitude coordinate", 
+            "standard_name": "latitude", 
+            "dat": "lat", 
+            "dtype": "float64"
+        }, 
+        "longitude": {
+            "units": "degrees_east", 
+            "long_name": "longitude coordinate", 
+            "standard_name": "longitude", 
+            "dat": "lon", 
+            "dtype": "float64"
+        }, 
+        "time": {
+            "dtype": "int32", 
+            "long_name": "time", 
+            "standard_name": "time", 
+            "units": "hours since 1970-01-01", 
+            "calendar": "standard", 
+            "size": null
+        }
+    }
+}
