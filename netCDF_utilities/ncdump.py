@@ -2,7 +2,7 @@
 Outputs NetCDF metadata
 """
 from __future__ import division, print_function, absolute_import
-from utils.hdfeos_attrs import hdfeos_attrs
+from netCDF_utilities.utils.hdfeos_attrs import hdfeos_attrs
 
 
 def ncdump(nc_fid, verb=True):
