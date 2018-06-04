@@ -1,8 +1,5 @@
-=====
 NetCDF utilities
-=====
-
-.. contents::
+================
 
 What are my NetCDF utilities?
 -----------------------------
