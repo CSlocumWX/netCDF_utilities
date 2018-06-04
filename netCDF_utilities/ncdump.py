@@ -2,6 +2,7 @@
 Outputs NetCDF metadata
 """
 from __future__ import division, print_function, absolute_import
+from utils.hdfeos_attrs import hdfeos_attrs
 
 
 def ncdump(nc_fid, verb=True):
@@ -45,6 +46,8 @@ def ncdump(nc_fid, verb=True):
 
     # NetCDF global attributes
     nc_attrs = nc_fid.ncattrs()
+    if "StructMetadata.0" in nc_attrs:
+        nc_attrs.update(hdfeos_attrs(nc_fid))
     if verb:
         print("NetCDF Global Attributes:")
         for nc_attr in nc_attrs:
