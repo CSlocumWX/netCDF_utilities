@@ -18,7 +18,7 @@ _standard_global_attr = ['title', 'institution', 'source', 'history',
 
 
 def ncgen(filename, data, nc_config, nc_format='NETCDF4',
-          return_instance=False, clobber=False):
+          return_instance=False, clobber=False, zlib=True, complevel=1, shuffle=True):
     """
     generates a NetCDF file based on a given data and configuration file
 
@@ -63,8 +63,8 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
             nc_fid.createDimension(dim, nc_dims[dim]['size'])
         else:
             nc_fid.createDimension(dim, data[nc_dims[dim]['dat']].size)
-        nc_dim = nc_fid.createVariable(dim, np.dtype(nc_dims[dim]['dtype']),
-                                       (dim,))
+        nc_dim = nc_fid.createVariable(dim, np.dtype(nc_dims[dim]['dtype']), (dim,),
+                                       zlib=zlib, complevel=complevel, shuffle=shuffle)
         for ncattr in ncattrs:
             if ncattr not in ['size', 'dtype', 'dat']:
                 nc_dim.setncattr(ncattr, nc_dims[dim][ncattr])
@@ -83,8 +83,8 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
             dimensions = nc_vars[var]['dim']
             assert all(dim in nc_dims for dim in dimensions), \
                 "One of the dimensions for %s does not exist" % var
-            nc_var = nc_fid.createVariable(var, dtype,
-                                           (dimensions), zlib=True)
+            nc_var = nc_fid.createVariable(var, dtype, (dimensions), 
+                    zlib=zlib, complevel=complevel, shuffle=shuffle)
         else:
             if dtype == 'c':
                 size = len(data[var])
@@ -93,7 +93,8 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
                     nc_fid.createDimension(name, size)
                 nc_var = nc_fid.createVariable(var, dtype, (name,))
             else:
-                nc_var = nc_fid.createVariable(var, dtype, zlib=True)
+                nc_var = nc_fid.createVariable(var, dtype,
+                        zlib=zlib, complevel=complevel, shuffle=shuffle)
         for ncattr in list(nc_vars[var].keys()):
             if ncattr not in ['dtype', 'dim', 'dat']:
                 nc_var.setncattr(ncattr, nc_vars[var][ncattr])
