@@ -4,10 +4,18 @@ NetCDF utilities
 What are my NetCDF utilities?
 -----------------------------
 
-Simple put, my utilities are snippets of code I constantly reused
+Simply put, my utilities are snippets of code I constantly reused
 in my Python workflow to read and write NetCDF files. I posted
 the files here so others could use them. Hopefully, others find
 them useful.
+
+With updates to the underlying NetCDF C libraries, HDFEOS files
+can be read by netCDF4-python. However, the attribute information
+is contained in a string called 'StructMetadata.0'. To get the
+attribute information, `netCDF_utilities.ncdump` checks the file
+and returns global attributes with the metadata tree. The netCDF4
+Dataset object instance is not updated to include these
+attributes.
 
 Installation
 ------------
