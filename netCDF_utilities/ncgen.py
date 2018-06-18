@@ -15,10 +15,21 @@ import warnings
 
 _standard_global_attr = ['title', 'institution', 'source', 'history',
                          'references', 'comments', 'Conventions']
+_NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit']
+_NOT_ATTRS = ['size', 'dtype', 'dat', 'dim'] + _NC4_OPTIONS
+
+def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
+    if dimensions is None:
+        dimensions = ()
+    if attributes is None:
+        attributes = {}
+    else:
+        attributes = {key:value for key, value in attributes.items() if key in _NC4_OPTIONS}
+    return nc_fid.createVariable(name, dtype, dimensions, **attributes)
 
 
 def ncgen(filename, data, nc_config, nc_format='NETCDF4',
-          return_instance=False, clobber=False, zlib=True, complevel=1, shuffle=True):
+        return_instance=False, clobber=False):
     """
     generates a NetCDF file based on a given data and configuration file
 
@@ -63,10 +74,9 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
             nc_fid.createDimension(dim, nc_dims[dim]['size'])
         else:
             nc_fid.createDimension(dim, data[nc_dims[dim]['dat']].size)
-        nc_dim = nc_fid.createVariable(dim, np.dtype(nc_dims[dim]['dtype']), (dim,),
-                                       zlib=zlib, complevel=complevel, shuffle=shuffle)
+        nc_dim = _create_var(nc_fid, name=dim, dtype=np.dtype(nc_dims[dim]['dtype']), dimensions=(dim), attributes=nc_dims[dim])
         for ncattr in ncattrs:
-            if ncattr not in ['size', 'dtype', 'dat']:
+            if ncattr not in _NOT_ATTRS:
                 nc_dim.setncattr(ncattr, nc_dims[dim][ncattr])
             elif ncattr == 'dat':
                 nc_fid.variables[dim][:] = data[nc_dims[dim]['dat']]
@@ -83,20 +93,18 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
             dimensions = nc_vars[var]['dim']
             assert all(dim in nc_dims for dim in dimensions), \
                 "One of the dimensions for %s does not exist" % var
-            nc_var = nc_fid.createVariable(var, dtype, (dimensions), 
-                    zlib=zlib, complevel=complevel, shuffle=shuffle)
+            nc_var = _create_var(nc_fid, name=var, dtype=dtype, dimensions=(dimensions), attributes=nc_vars[var])
         else:
             if dtype == 'c':
                 size = len(data[var])
                 name = "strdim%02d" % size
                 if name not in nc_fid.variables:
                     nc_fid.createDimension(name, size)
-                nc_var = nc_fid.createVariable(var, dtype, (name,))
+                nc_var = _create_var(nc_fid, name=var, dtype=dtype, dimensions=(name,), attributes=nc_vars[var])
             else:
-                nc_var = nc_fid.createVariable(var, dtype,
-                        zlib=zlib, complevel=complevel, shuffle=shuffle)
+                nc_var = _create_var(nc_fid, name=var, dtype=dtype, attributes=nc_vars[var])
         for ncattr in list(nc_vars[var].keys()):
-            if ncattr not in ['dtype', 'dim', 'dat']:
+            if ncattr not in _NOT_ATTRS:
                 nc_var.setncattr(ncattr, nc_vars[var][ncattr])
         if var in data:
             if dtype == 'c':
