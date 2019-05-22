@@ -1,0 +1,4 @@
+/build/
+/dist/
+/netCDF_utilities.egg-info/
+*.nc
