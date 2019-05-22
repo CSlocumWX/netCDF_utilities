@@ -1,0 +1,37 @@
+[global_attributes]
+    source = "example_generate_netcdf_file.py"
+    Conventions = "CF-1.6"
+    institution = "Colorado State University"
+    title = "Example NetCDF file"
+
+[dimensions]
+
+    [dimensions.latitude]
+        long_name = "latitude coordinate"
+        standard_name = "latitude"
+        units = "degrees_north"
+        dtype = "float32"
+        dat = "lat"
+
+    [dimensions.longitude]
+        units = "degrees_east"
+        long_name = "longitude coordinate"
+        standard_name = "longitude"
+        dtype = "float32"
+        dat = "lon"
+
+    [dimensions.time]  # note that time doesn't have 'dat' or 'size'. this signals that it is unlimited
+        long_name = "time"
+        standard_name = "time"
+        units = "hours since 1970-01-01"
+        calendar = "standard"
+        dtype = "int32"
+
+[variables]
+
+    [variables.pwat]
+        long_name = "precipitable water in mass per unit area; forecast"
+        standard_name = "atmosphere_mass_content_of_water_vapor"
+        units = "kg m-2"
+        dtype = "float64"
+        dim = [ "time", "latitude", "longitude",]
