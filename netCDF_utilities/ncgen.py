@@ -39,9 +39,10 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         string containing the filename and path
     data : dict
         Python dictionary containing appropriate data
-    nc_config : dict
-        Dictionary with configuration options for globel attributes,
+    nc_config : dict or file path
+        Configuration options for globel attributes,
         dimensions, and variables
+        Either as a dict or toml/json file
     nc_format : str (default='NETCDF4')
         See netCDF4 documentation for options
     return_instance : Boolean
@@ -57,6 +58,17 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
             raise IOError("NetCDF file already exists: %s" % filename)
     if nc_format not in netCDF4._netCDF4._format_dict:
         raise ValueError(nc_format + " not a valid netCDF4 module format")
+    if not isinstance(nc_config, dict):
+        from collections import OrderedDict
+        ext = os.path.basename(nc_config).split('.')[-1]
+        if ext == 'json':
+            import json
+            nc_config = json.load(open(nc_config, 'r'), object_pairs_hook=OrderedDict)
+        elif ext == 'toml':
+            import toml
+            nc_config = toml.load(open(nc_config, 'r'), _dict=OrderedDict)
+        else:
+            raise IOError("The following file extension for the configuration file is not supported: " + ext)
     nc_attr = nc_config['global_attributes']
     nc_dims = nc_config['dimensions']
     nc_vars = nc_config['variables']
