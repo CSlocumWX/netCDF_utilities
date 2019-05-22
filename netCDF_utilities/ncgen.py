@@ -72,8 +72,10 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         ncattrs = list(nc_dims[dim].keys())
         if 'size' in ncattrs:
             nc_fid.createDimension(dim, nc_dims[dim]['size'])
-        else:
+        elif 'dat' in ncattrs:
             nc_fid.createDimension(dim, data[nc_dims[dim]['dat']].size)
+        else:
+            nc_fid.createDimension(dim, None)
         nc_dim = _create_var(nc_fid, name=dim, dtype=np.dtype(nc_dims[dim]['dtype']), dimensions=(dim), attributes=nc_dims[dim])
         for ncattr in ncattrs:
             if ncattr not in _NOT_ATTRS:
