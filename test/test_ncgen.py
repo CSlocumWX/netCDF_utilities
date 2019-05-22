@@ -18,12 +18,6 @@ References
 from __future__ import division, print_function, absolute_import
 import numpy as np
 from netCDF_utilities import ncgen
-# json and OrderedDict are used to read in configuration
-# information. These are optional if you create your
-# metadata dictionary in the code. Note: Python dictionaries
-# do not preserve order.
-import json
-from collections import OrderedDict
 
 # Print ncgen docstring
 print(ncgen.__doc__)
@@ -39,11 +33,8 @@ data = {'lat': lats,
         'lon': lons,
         'time': time,
         'pwat': random_data}
-# Load the example configuration file. object_pairs_hook loads
-# the data as a OrderedDict vs a native Python dictionary to
-# preserve variable and metadata order. If order doesn't matter,
-# the object_pairs_hook keyword argument can be removed.
-nc_config = json.load(open("./example_nc_config.json", "r"), object_pairs_hook=OrderedDict)
+# Set  the example configuration file
+nc_config = "./example_nc_config.json"
 # Call ncgen
 ncgen('all_data_ex.nc', data, nc_config, clobber=True)
 
@@ -51,7 +42,7 @@ ncgen('all_data_ex.nc', data, nc_config, clobber=True)
 data = {'lat': lats,
         'lon': lons}
 
-nc_config = json.load(open("./example_nc_config_timeUnlimited.json", "r"), object_pairs_hook=OrderedDict)
+nc_config = "./example_nc_config_timeUnlimited.json"
 nc_fid = ncgen('unlimited_time_ex.nc', data, nc_config, return_instance=True, clobber=True)
 # ncgen returns an instance of the NetCDF file.
 # To write to the unlimited dimensions, use a procedure like
