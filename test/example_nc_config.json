@@ -24,14 +24,14 @@
             "long_name": "latitude coordinate", 
             "standard_name": "latitude", 
             "dat": "lat", 
-            "dtype": "float64"
+            "dtype": "float32"
         }, 
         "longitude": {
             "units": "degrees_east", 
             "long_name": "longitude coordinate", 
             "standard_name": "longitude", 
             "dat": "lon", 
-            "dtype": "float64"
+            "dtype": "float32"
         }, 
         "time": {
             "dat" : "time",
