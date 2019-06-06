@@ -54,3 +54,15 @@ with ncgen('unlimited_time_ex.nc', data, nc_config, return_instance=True, clobbe
         nc_fid.variables['time'][count] = time[count]
         # write data corresponding to that time
         nc_fid.variables['pwat'][count, :, :] = random_data[count, :, :]
+
+
+####################################################################
+# Third example: Groups
+data = {'groups': {'blah': {}}}
+data['groups']['blah'].update({'lat': lats,
+        'lon': lons,
+        'time': time,
+        'pwat': random_data})
+
+nc_config = "./example_groups_nc_config.toml"
+ncgen('groups.nc', data, nc_config, clobber=True)
