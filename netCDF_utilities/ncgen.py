@@ -90,6 +90,13 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
 
 
 def _add_to_group(group, data, config, nc_format):
+    def _add_attribute(obj, attribute, attribute_value, dtype):
+        if any([isinstance(attribute_value, current_type) for current_type in [float, int, np.float, np.int]]):
+            attribute_value =  np.dtype(dtype).type(attribute_value)
+        elif any([isinstance(attribute_value, current_type) for current_type in [np.ndarray, list]]):
+            attr_value = np.array(attribute_value, dtype=dtype)
+        obj.setncattr(attribute, attribute_value)
+
     if 'attributes' in config:
         attrs = config['attributes']
         for attr in attrs:
@@ -107,10 +114,11 @@ def _add_to_group(group, data, config, nc_format):
         if 'var' in ncattrs:
             var_create = nc_dims[dim]['var']
         if var_create:
+            dtype = np.dtype(nc_dims[dim]['dtype'])
             nc_dim = _create_var(group, name=dim, dtype=np.dtype(nc_dims[dim]['dtype']), dimensions=(dim), attributes=nc_dims[dim])
             for ncattr in ncattrs:
                 if ncattr not in _NOT_ATTRS:
-                    nc_dim.setncattr(ncattr, nc_dims[dim][ncattr])
+                    _add_attribute(nc_dim, ncattr,  nc_dims[dim][ncattr], dtype)
                 elif ncattr == 'dat':
                     group.variables[dim][:] = data[nc_dims[dim]['dat']]
     nc_vars = config['variables']
@@ -139,7 +147,8 @@ def _add_to_group(group, data, config, nc_format):
                 nc_var = _create_var(group, name=var, dtype=dtype, attributes=nc_vars[var])
         for ncattr in list(nc_vars[var].keys()):
             if ncattr not in _NOT_ATTRS:
-                nc_var.setncattr(ncattr, nc_vars[var][ncattr])
+                attr_value = nc_vars[var][ncattr]
+                _add_attribute(nc_var, ncattr, attr_value, dtype)
         if var in data:
             if dtype == 'c':
                 data_entry = netCDF4.stringtoarr(data[var], len(data[var]))
