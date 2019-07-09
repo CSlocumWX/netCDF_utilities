@@ -16,7 +16,7 @@ import warnings
 _standard_global_attr = ['title', 'institution', 'source', 'history',
                          'references', 'comments', 'Conventions']
 _NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit']
-_NOT_ATTRS = ['size', 'dtype', 'dat', 'dim'] + _NC4_OPTIONS
+_NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 
 def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
     if dimensions is None:
@@ -103,12 +103,16 @@ def _add_to_group(group, data, config, nc_format):
             group.createDimension(dim, data[nc_dims[dim]['dat']].size)
         else:
             group.createDimension(dim, None)
-        nc_dim = _create_var(group, name=dim, dtype=np.dtype(nc_dims[dim]['dtype']), dimensions=(dim), attributes=nc_dims[dim])
-        for ncattr in ncattrs:
-            if ncattr not in _NOT_ATTRS:
-                nc_dim.setncattr(ncattr, nc_dims[dim][ncattr])
-            elif ncattr == 'dat':
-                group.variables[dim][:] = data[nc_dims[dim]['dat']]
+        var_create = True
+        if 'var' in ncattrs:
+            var_create = nc_dims[dim]['var']
+        if var_create:
+            nc_dim = _create_var(group, name=dim, dtype=np.dtype(nc_dims[dim]['dtype']), dimensions=(dim), attributes=nc_dims[dim])
+            for ncattr in ncattrs:
+                if ncattr not in _NOT_ATTRS:
+                    nc_dim.setncattr(ncattr, nc_dims[dim][ncattr])
+                elif ncattr == 'dat':
+                    group.variables[dim][:] = data[nc_dims[dim]['dat']]
     nc_vars = config['variables']
     for var in nc_vars:
         if nc_vars[var]['dtype'] == 'str':
