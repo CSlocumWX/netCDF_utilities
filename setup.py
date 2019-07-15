@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='netCDF_utilities',
-    version='1.1c',
+    version='1.2c',
     description='Utilities to use with the Unidata netCDF4 module',
     long_description=readme,
     author='Chris Slocum',

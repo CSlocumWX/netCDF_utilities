@@ -93,8 +93,8 @@ def _add_to_group(group, data, config, nc_format):
     def _add_attribute(obj, attribute, attribute_value, dtype):
         if any([isinstance(attribute_value, current_type) for current_type in [float, int, np.float, np.int]]):
             attribute_value =  np.dtype(dtype).type(attribute_value)
-        elif any([isinstance(attribute_value, current_type) for current_type in [np.ndarray, list]]):
-            attr_value = np.array(attribute_value, dtype=dtype)
+        elif any([isinstance(attribute_value, current_type) for current_type in [np.ndarray, list, tuple]]):
+            attribute_value = np.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
     if 'attributes' in config:
