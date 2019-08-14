@@ -76,7 +76,10 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         if global_attr not in _standard_global_attr:
             warnings.warn("%s not in list of standard global attributes" % global_attr)
         setattr(nc_fid, global_attr, nc_attrs[global_attr])
-    nc_fid.history = "Generated %s" % datetime.datetime.utcnow()
+    history = ''
+    if 'history' in nc_attrs:
+        history += nc_attrs['history'] 
+    nc_fid.history = " Generated %s" % datetime.datetime.utcnow()
     if 'groups' in nc_config:
         for groupname in nc_config['groups']:
             group = nc_fid.createGroup(groupname)
@@ -157,6 +160,6 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[var]
                 if has_dim:
-                    group.variables[var][:] = data_entry
+                    group.variables[var][:] = data_entry.astype(dtype)
                 else:
                     group.variables[var][0] = data_entry
