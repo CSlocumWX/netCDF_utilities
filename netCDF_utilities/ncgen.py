@@ -17,6 +17,8 @@ _standard_global_attr = ['title', 'institution', 'source', 'history',
                          'references', 'comments', 'Conventions']
 _NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit']
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
+_SCALAR_TYPES = [float, int, np.float, np.int]
+_ARRAY_TYPES = [np.ndarray, list, tuple]
 
 def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
     if dimensions is None:
@@ -94,9 +96,9 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
 
 def _add_to_group(group, data, config, nc_format):
     def _add_attribute(obj, attribute, attribute_value, dtype):
-        if any([isinstance(attribute_value, current_type) for current_type in [float, int, np.float, np.int]]):
+        if any([isinstance(attribute_value, current_type) for current_type in _SCALAR_TYPES]):
             attribute_value =  np.dtype(dtype).type(attribute_value)
-        elif any([isinstance(attribute_value, current_type) for current_type in [np.ndarray, list, tuple]]):
+        elif any([isinstance(attribute_value, current_type) for current_type in _ARRAY_TYPES]):
             attribute_value = np.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
@@ -109,8 +111,10 @@ def _add_to_group(group, data, config, nc_format):
         ncattrs = list(nc_dims[dim].keys())
         if 'size' in ncattrs:
             group.createDimension(dim, nc_dims[dim]['size'])
-        elif 'dat' in ncattrs:
-            group.createDimension(dim, data[nc_dims[dim]['dat']].size)
+        elif 'dat' in ncattrs and any([isinstance(data[nc_dims[dim]['dat']], current_type) for current_type in _ARRAY_TYPES]):
+            group.createDimension(dim, np.array(data[nc_dims[dim]['dat']]).size)
+        elif 'dat' in ncattrs and any([isinstance(data[nc_dims[dim]['dat']], current_type) for current_type in _SCALAR_TYPES]):
+            group.createDimension(dim, data[nc_dims[dim]['dat']])
         else:
             group.createDimension(dim, None)
         var_create = True
