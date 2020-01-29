@@ -80,8 +80,11 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         setattr(nc_fid, global_attr, nc_attrs[global_attr])
     history = ''
     if 'history' in nc_attrs:
-        history += nc_attrs['history'] 
+        history += nc_attrs['history']
     nc_fid.history = " Generated %s" % datetime.datetime.utcnow()
+    if 'global_attributes' in data:
+        for attr in data['global_attributes']:
+            setattr(nc_fid, attr, data['global_attributes'][attr])
     if 'groups' in nc_config:
         for groupname in nc_config['groups']:
             group = nc_fid.createGroup(groupname)
