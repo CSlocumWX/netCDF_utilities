@@ -96,10 +96,11 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
 
 def _add_to_group(group, data, config, nc_format):
     def _add_attribute(obj, attribute, attribute_value, dtype):
-        if any([isinstance(attribute_value, current_type) for current_type in _SCALAR_TYPES]):
-            attribute_value =  np.dtype(dtype).type(attribute_value)
-        elif any([isinstance(attribute_value, current_type) for current_type in _ARRAY_TYPES]):
-            attribute_value = np.array(attribute_value, dtype=dtype)
+        if attribute not in ["add_offset", "scale_factor", "least_significant_digit", "actual_range"]:
+            if any([isinstance(attribute_value, current_type) for current_type in _SCALAR_TYPES]):
+                attribute_value =  np.dtype(dtype).type(attribute_value)
+            elif any([isinstance(attribute_value, current_type) for current_type in _ARRAY_TYPES]):
+                attribute_value = np.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
     if 'attributes' in config:
