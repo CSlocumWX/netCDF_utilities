@@ -15,6 +15,23 @@ import warnings
 
 _standard_global_attr = ['title', 'institution', 'source', 'history',
                          'references', 'comments', 'Conventions']
+_acdd_global_attr = ['summary', 'id', 'naming_authority', 'source', 'processing_level',
+                     'acknowledgment', 'license', 'standard_name_vocabulary',
+                     'date_created', 'creator_name', 'creator_email', 'creator_url',
+                     'project', 'publisher_name', 'publisher_email', 'publisher_url',
+                     'geospatial_bounds', 'geospatial_bounds_crs', 'geospatial_bounds_vertical_crs',
+                     'geospatial_lat_min', 'geospatial_lat_max', 'geospatial_lon_min', 'geospatial_lon_max',
+                     'geospatial_vertical_min', 'geospatial_vertical_max', 'geospatial_vertical_positive',
+                     'time_coverage_start', 'time_coverage_end', 'time_coverage_duration', 'time_coverage_resolution',
+                     'creator_type', 'creator_institution', 'publisher_type', 'publisher_institution',
+                     'program', 'contributor_name', 'contributor_role', 'geospatial_lat_units',
+                     'geospatial_lat_resolution', 'geospatial_lon_units', 'geospatial_lon_resolution',
+                     'geospatial_vertical_units', 'geospatial_vertical_resolution',
+                     'date_modified', 'date_issued', 'date_metadata_modified',
+                     'product_version', 'keywords_vocabulary', 'platform', 'platform_vocabulary',
+                     'instrument', 'instrument_vocabulary', 'cdm_data_type', 'metadata_link',
+                     'keywords', 'keyword_vocabulary'
+                     ]
 _NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit']
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _SCALAR_TYPES = [float, int, np.float, np.int]
@@ -75,13 +92,13 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
                              format=nc_format)
     nc_attrs = nc_config['global_attributes']
     for global_attr in nc_attrs:
-        if global_attr not in _standard_global_attr:
-            warnings.warn("%s not in list of standard global attributes" % global_attr)
+        if global_attr not in _standard_global_attr + _acdd_global_attr:
+            warnings.warn("%s not in list of standard global attributes or ACDD" % global_attr)
         setattr(nc_fid, global_attr, nc_attrs[global_attr])
     history = ''
     if 'history' in nc_attrs:
         history += nc_attrs['history']
-    nc_fid.history = " Generated %s" % datetime.datetime.utcnow()
+    nc_fid.history = " Generated %sZ" % datetime.datetime.utcnow().isoformat(sep='T', timespec='milliseconds')
     if 'global_attributes' in data:
         for attr in data['global_attributes']:
             setattr(nc_fid, attr, data['global_attributes'][attr])
