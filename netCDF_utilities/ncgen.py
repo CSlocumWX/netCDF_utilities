@@ -98,7 +98,7 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
     history = ''
     if 'history' in nc_attrs:
         history += nc_attrs['history']
-    nc_fid.history = " Generated %sZ" % datetime.datetime.utcnow().isoformat(sep='T', timespec='milliseconds')
+    nc_fid.history = " Created %sZ" % datetime.datetime.utcnow().isoformat(sep='T', timespec='milliseconds')
     if 'global_attributes' in data:
         for attr in data['global_attributes']:
             setattr(nc_fid, attr, data['global_attributes'][attr])
