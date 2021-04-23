@@ -185,6 +185,6 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[var]
                 if has_dim:
-                    group.variables[var][:] = data_entry.astype(dtype)
+                    group.variables[var][:] = np.array(data_entry).astype(dtype)
                 else:
                     group.variables[var][0] = data_entry
