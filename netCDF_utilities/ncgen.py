@@ -168,7 +168,7 @@ def _add_to_group(group, data, config, nc_format):
             if dtype == 'c':
                 size = len(data[var])
                 name = "strdim%02d" % size
-                if name not in nc_fid.variables:
+                if name not in nc_vars:
                     group.createDimension(name, size)
                 nc_var = _create_var(group, name=var, dtype=dtype, dimensions=(name,), attributes=nc_vars[var])
             else:
