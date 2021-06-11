@@ -32,10 +32,10 @@ _acdd_global_attr = ['summary', 'id', 'naming_authority', 'source', 'processing_
                      'instrument', 'instrument_vocabulary', 'cdm_data_type', 'metadata_link',
                      'keywords', 'keyword_vocabulary'
                      ]
-_NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit']
+_NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value']
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _SCALAR_TYPES = [float, int, np.float, np.int]
-_ARRAY_TYPES = [np.ndarray, list, tuple]
+_ARRAY_TYPES = [np.ndarray, np.ma.core.MaskedArray, list, tuple]
 
 def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
     if dimensions is None:
@@ -89,7 +89,7 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         else:
             raise IOError("The following file extension for the configuration file is not supported: " + ext)
     nc_fid = netCDF4.Dataset(filename, mode='w', clobber=clobber,
-                             format=nc_format)
+            format=nc_format)
     nc_attrs = nc_config['global_attributes']
     for global_attr in nc_attrs:
         if global_attr not in _standard_global_attr + _acdd_global_attr:
@@ -120,7 +120,7 @@ def _add_to_group(group, data, config, nc_format):
             if any([isinstance(attribute_value, current_type) for current_type in _SCALAR_TYPES]):
                 attribute_value =  np.dtype(dtype).type(attribute_value)
             elif any([isinstance(attribute_value, current_type) for current_type in _ARRAY_TYPES]):
-                attribute_value = np.array(attribute_value, dtype=dtype)
+                attribute_value = np.ma.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
     if 'attributes' in config:
@@ -133,7 +133,7 @@ def _add_to_group(group, data, config, nc_format):
         if 'size' in ncattrs:
             group.createDimension(dim, nc_dims[dim]['size'])
         elif 'dat' in ncattrs and any([isinstance(data[nc_dims[dim]['dat']], current_type) for current_type in _ARRAY_TYPES]):
-            group.createDimension(dim, np.array(data[nc_dims[dim]['dat']]).size)
+            group.createDimension(dim, np.ma.array(data[nc_dims[dim]['dat']]).size)
         elif 'dat' in ncattrs and any([isinstance(data[nc_dims[dim]['dat']], current_type) for current_type in _SCALAR_TYPES]):
             group.createDimension(dim, data[nc_dims[dim]['dat']])
         else:
@@ -185,6 +185,6 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[var]
                 if has_dim:
-                    group.variables[var][:] = np.array(data_entry).astype(dtype)
+                    group.variables[var][:] = np.ma.array(data_entry).astype(dtype).copy()
                 else:
                     group.variables[var][0] = data_entry
