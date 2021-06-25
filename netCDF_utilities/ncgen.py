@@ -31,7 +31,7 @@ _acdd_global_attr = ['summary', 'id', 'naming_authority', 'source', 'processing_
                      'product_version', 'keywords_vocabulary', 'platform', 'platform_vocabulary',
                      'instrument', 'instrument_vocabulary', 'cdm_data_type', 'metadata_link',
                      'keywords', 'keyword_vocabulary',
-                     'contributor_url', 'contributor_type', 'contributor_institution'
+                     'contributor_url', 'contributor_type', 'contributor_institution', 'contributor_email'
                      ]
 
 _NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value']
