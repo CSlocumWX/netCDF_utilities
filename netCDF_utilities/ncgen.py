@@ -30,8 +30,10 @@ _acdd_global_attr = ['summary', 'id', 'naming_authority', 'source', 'processing_
                      'date_modified', 'date_issued', 'date_metadata_modified',
                      'product_version', 'keywords_vocabulary', 'platform', 'platform_vocabulary',
                      'instrument', 'instrument_vocabulary', 'cdm_data_type', 'metadata_link',
-                     'keywords', 'keyword_vocabulary'
+                     'keywords', 'keyword_vocabulary',
+                     'contributor_url', 'contributor_type', 'contributor_institution'
                      ]
+
 _NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value']
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _SCALAR_TYPES = [float, int, np.float, np.int]
