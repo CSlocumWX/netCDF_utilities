@@ -46,7 +46,8 @@ def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
         attributes = {}
     else:
         attributes = {key:value for key, value in attributes.items() if key in _NC4_OPTIONS}
-    return nc_fid.createVariable(name, dtype, dimensions, **attributes)
+    var = nc_fid.createVariable(name, dtype, dimensions, **attributes)
+    return var
 
 
 def ncgen(filename, data, nc_config, nc_format='NETCDF4',
@@ -187,6 +188,6 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[var]
                 if has_dim:
-                    group.variables[var][:] = np.ma.array(data_entry).astype(dtype).copy()
+                    group.variables[var][:] = np.ma.array(data_entry)
                 else:
                     group.variables[var][0] = data_entry
