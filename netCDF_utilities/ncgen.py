@@ -12,6 +12,7 @@ import datetime
 import numpy as np
 import os
 import warnings
+import six
 
 _standard_global_attr = ['title', 'institution', 'source', 'history',
                          'references', 'comments', 'Conventions']
@@ -38,6 +39,7 @@ _NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _SCALAR_TYPES = [float, int, np.float, np.int]
 _ARRAY_TYPES = [np.ndarray, np.ma.core.MaskedArray, list, tuple]
+_STR_TYPES = [str, np.str, np.character, np.unicode,  six.string_types]
 
 def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
     if dimensions is None:
@@ -188,6 +190,9 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[var]
                 if has_dim:
-                    group.variables[var][:] = np.ma.array(data_entry)
+                    if any([dtype is current_type for current_type in _STR_TYPES]):
+                        group.variables[var][:] = np.array(data_entry.data)
+                    else:
+                        group.variables[var][:] = np.ma.array(data_entry)
                 else:
                     group.variables[var][0] = data_entry
