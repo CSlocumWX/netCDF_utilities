@@ -128,7 +128,7 @@ def ncgen(filename,
         history += ' ' + nc_attrs['history']
     nc_fid.history = history
     nc_fid.date_created = date_created
-    nc_fid.date_modified = date_modified
+    nc_fid.date_modified = date_created
 
     if 'global_attributes' in data:
         for attr in data['global_attributes']:
