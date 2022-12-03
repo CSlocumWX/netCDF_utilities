@@ -99,10 +99,14 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         if global_attr not in _standard_global_attr + _acdd_global_attr:
             warnings.warn("%s not in list of standard global attributes or ACDD" % global_attr)
         setattr(nc_fid, global_attr, nc_attrs[global_attr])
-    history = ''
+    date_created = "%sZ" % datetime.datetime.utcnow().isoformat(sep='T', timespec='milliseconds')
+    history = 'Created ' + date_created
     if 'history' in nc_attrs:
-        history += nc_attrs['history']
-    nc_fid.history = " Created %sZ" % datetime.datetime.utcnow().isoformat(sep='T', timespec='milliseconds')
+        history += ' ' + nc_attrs['history']
+    nc_fid.history = history
+    nc_fid.date_created = date_created
+    nc_fid.date_modified = date_modified
+
     if 'global_attributes' in data:
         for attr in data['global_attributes']:
             setattr(nc_fid, attr, data['global_attributes'][attr])
