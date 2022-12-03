@@ -13,32 +13,40 @@ import numpy as np
 import os
 import warnings
 
-_standard_global_attr = ['title', 'institution', 'source', 'history',
-                         'references', 'comments', 'Conventions']
-_acdd_global_attr = ['summary', 'id', 'naming_authority', 'source', 'processing_level',
-                     'acknowledgment', 'license', 'standard_name_vocabulary',
-                     'date_created', 'creator_name', 'creator_email', 'creator_url',
-                     'project', 'publisher_name', 'publisher_email', 'publisher_url',
-                     'geospatial_bounds', 'geospatial_bounds_crs', 'geospatial_bounds_vertical_crs',
-                     'geospatial_lat_min', 'geospatial_lat_max', 'geospatial_lon_min', 'geospatial_lon_max',
-                     'geospatial_vertical_min', 'geospatial_vertical_max', 'geospatial_vertical_positive',
-                     'time_coverage_start', 'time_coverage_end', 'time_coverage_duration', 'time_coverage_resolution',
-                     'creator_type', 'creator_institution', 'publisher_type', 'publisher_institution',
-                     'program', 'contributor_name', 'contributor_role', 'geospatial_lat_units',
-                     'geospatial_lat_resolution', 'geospatial_lon_units', 'geospatial_lon_resolution',
-                     'geospatial_vertical_units', 'geospatial_vertical_resolution',
-                     'date_modified', 'date_issued', 'date_metadata_modified',
-                     'product_version', 'keywords_vocabulary', 'platform', 'platform_vocabulary',
-                     'instrument', 'instrument_vocabulary', 'cdm_data_type', 'metadata_link',
-                     'keywords', 'keyword_vocabulary',
-                     'contributor_url', 'contributor_type', 'contributor_institution', 'contributor_email'
-                     ]
+_standard_global_attr = [
+    'title', 'institution', 'source', 'history', 'references', 'comments',
+    'Conventions'
+]
+_acdd_global_attr = [
+    'summary', 'id', 'naming_authority', 'source', 'processing_level',
+    'acknowledgment', 'license', 'standard_name_vocabulary', 'date_created',
+    'creator_name', 'creator_email', 'creator_url', 'project', 'publisher_name',
+    'publisher_email', 'publisher_url', 'geospatial_bounds',
+    'geospatial_bounds_crs', 'geospatial_bounds_vertical_crs',
+    'geospatial_lat_min', 'geospatial_lat_max', 'geospatial_lon_min',
+    'geospatial_lon_max', 'geospatial_vertical_min', 'geospatial_vertical_max',
+    'geospatial_vertical_positive', 'time_coverage_start', 'time_coverage_end',
+    'time_coverage_duration', 'time_coverage_resolution', 'creator_type',
+    'creator_institution', 'publisher_type', 'publisher_institution', 'program',
+    'contributor_name', 'contributor_role', 'geospatial_lat_units',
+    'geospatial_lat_resolution', 'geospatial_lon_units',
+    'geospatial_lon_resolution', 'geospatial_vertical_units',
+    'geospatial_vertical_resolution', 'date_modified', 'date_issued',
+    'date_metadata_modified', 'product_version', 'keywords_vocabulary',
+    'platform', 'platform_vocabulary', 'instrument', 'instrument_vocabulary',
+    'cdm_data_type', 'metadata_link', 'keywords', 'keyword_vocabulary',
+    'contributor_url', 'contributor_type', 'contributor_institution',
+    'contributor_email'
+]
 
-_NC4_OPTIONS = ['zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value']
+_NC4_OPTIONS = [
+    'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value'
+]
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _SCALAR_TYPES = [float, int, np.float, np.int]
 _ARRAY_TYPES = [np.ndarray, np.ma.core.MaskedArray, list, tuple]
 _STR_TYPES = [str, np.str, np.character, np.unicode]
+
 
 def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
     if dimensions is None:
@@ -46,13 +54,20 @@ def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
     if attributes is None:
         attributes = {}
     else:
-        attributes = {key:value for key, value in attributes.items() if key in _NC4_OPTIONS}
+        attributes = {
+            key: value
+            for key, value in attributes.items() if key in _NC4_OPTIONS
+        }
     var = nc_fid.createVariable(name, dtype, dimensions, **attributes)
     return var
 
 
-def ncgen(filename, data, nc_config, nc_format='NETCDF4',
-        return_instance=False, clobber=False):
+def ncgen(filename,
+          data,
+          nc_config,
+          nc_format='NETCDF4',
+          return_instance=False,
+          clobber=False):
     """
     generates a NetCDF file based on a given data and configuration file
 
@@ -86,20 +101,28 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
         ext = os.path.basename(nc_config).split('.')[-1]
         if ext == 'json':
             import json
-            nc_config = json.load(open(nc_config, 'r'), object_pairs_hook=OrderedDict)
+            nc_config = json.load(open(nc_config, 'r'),
+                                  object_pairs_hook=OrderedDict)
         elif ext == 'toml':
             import toml
             nc_config = toml.load(open(nc_config, 'r'), _dict=OrderedDict)
         else:
-            raise IOError("The following file extension for the configuration file is not supported: " + ext)
-    nc_fid = netCDF4.Dataset(filename, mode='w', clobber=clobber,
-            format=nc_format)
+            raise IOError(
+                "The following file extension for the configuration file is not supported: "
+                + ext)
+    nc_fid = netCDF4.Dataset(filename,
+                             mode='w',
+                             clobber=clobber,
+                             format=nc_format)
     nc_attrs = nc_config['global_attributes']
     for global_attr in nc_attrs:
         if global_attr not in _standard_global_attr + _acdd_global_attr:
-            warnings.warn("%s not in list of standard global attributes or ACDD" % global_attr)
+            warnings.warn(
+                "%s not in list of standard global attributes or ACDD" %
+                global_attr)
         setattr(nc_fid, global_attr, nc_attrs[global_attr])
-    date_created = "%sZ" % datetime.datetime.utcnow().isoformat(sep='T', timespec='milliseconds')
+    date_created = "%sZ" % datetime.datetime.utcnow().isoformat(
+        sep='T', timespec='milliseconds')
     history = 'Created ' + date_created
     if 'history' in nc_attrs:
         history += ' ' + nc_attrs['history']
@@ -113,7 +136,8 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
     if 'groups' in nc_config:
         for groupname in nc_config['groups']:
             group = nc_fid.createGroup(groupname)
-            _add_to_group(group, data['groups'][groupname], nc_config['groups'][groupname], nc_format)
+            _add_to_group(group, data['groups'][groupname],
+                          nc_config['groups'][groupname], nc_format)
     else:
         _add_to_group(nc_fid, data, nc_config, nc_format)
     nc_fid.close()
@@ -124,10 +148,19 @@ def ncgen(filename, data, nc_config, nc_format='NETCDF4',
 
 def _add_to_group(group, data, config, nc_format):
     def _add_attribute(obj, attribute, attribute_value, dtype):
-        if attribute not in ["add_offset", "scale_factor", "least_significant_digit", "actual_range"]:
-            if any([isinstance(attribute_value, current_type) for current_type in _SCALAR_TYPES]):
-                attribute_value =  np.dtype(dtype).type(attribute_value)
-            elif any([isinstance(attribute_value, current_type) for current_type in _ARRAY_TYPES]):
+        if attribute not in [
+                "add_offset", "scale_factor", "least_significant_digit",
+                "actual_range"
+        ]:
+            if any([
+                    isinstance(attribute_value, current_type)
+                    for current_type in _SCALAR_TYPES
+            ]):
+                attribute_value = np.dtype(dtype).type(attribute_value)
+            elif any([
+                    isinstance(attribute_value, current_type)
+                    for current_type in _ARRAY_TYPES
+            ]):
                 attribute_value = np.ma.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
@@ -140,9 +173,16 @@ def _add_to_group(group, data, config, nc_format):
         ncattrs = list(nc_dims[dim].keys())
         if 'size' in ncattrs:
             group.createDimension(dim, nc_dims[dim]['size'])
-        elif 'dat' in ncattrs and any([isinstance(data[nc_dims[dim]['dat']], current_type) for current_type in _ARRAY_TYPES]):
-            group.createDimension(dim, np.ma.array(data[nc_dims[dim]['dat']]).size)
-        elif 'dat' in ncattrs and any([isinstance(data[nc_dims[dim]['dat']], current_type) for current_type in _SCALAR_TYPES]):
+        elif 'dat' in ncattrs and any([
+                isinstance(data[nc_dims[dim]['dat']], current_type)
+                for current_type in _ARRAY_TYPES
+        ]):
+            group.createDimension(dim,
+                                  np.ma.array(data[nc_dims[dim]['dat']]).size)
+        elif 'dat' in ncattrs and any([
+                isinstance(data[nc_dims[dim]['dat']], current_type)
+                for current_type in _SCALAR_TYPES
+        ]):
             group.createDimension(dim, data[nc_dims[dim]['dat']])
         else:
             group.createDimension(dim, None)
@@ -151,10 +191,14 @@ def _add_to_group(group, data, config, nc_format):
             var_create = nc_dims[dim]['var']
         if var_create:
             dtype = np.dtype(nc_dims[dim]['dtype'])
-            nc_dim = _create_var(group, name=dim, dtype=np.dtype(nc_dims[dim]['dtype']), dimensions=(dim), attributes=nc_dims[dim])
+            nc_dim = _create_var(group,
+                                 name=dim,
+                                 dtype=np.dtype(nc_dims[dim]['dtype']),
+                                 dimensions=(dim),
+                                 attributes=nc_dims[dim])
             for ncattr in ncattrs:
                 if ncattr not in _NOT_ATTRS:
-                    _add_attribute(nc_dim, ncattr,  nc_dims[dim][ncattr], dtype)
+                    _add_attribute(nc_dim, ncattr, nc_dims[dim][ncattr], dtype)
                 elif ncattr == 'dat':
                     group.variables[dim][:] = data[nc_dims[dim]['dat']]
     nc_vars = config['variables']
@@ -171,16 +215,27 @@ def _add_to_group(group, data, config, nc_format):
             dimensions = nc_vars[var]['dim']
             assert all(dim in nc_dims for dim in dimensions), \
                 "One of the dimensions for %s does not exist" % var
-            nc_var = _create_var(group, name=var, dtype=dtype, dimensions=(dimensions), attributes=nc_vars[var])
+            nc_var = _create_var(group,
+                                 name=var,
+                                 dtype=dtype,
+                                 dimensions=(dimensions),
+                                 attributes=nc_vars[var])
         else:
             if dtype == 'c':
                 size = len(data[var])
                 name = "strdim%02d" % size
                 if name not in nc_vars:
                     group.createDimension(name, size)
-                nc_var = _create_var(group, name=var, dtype=dtype, dimensions=(name,), attributes=nc_vars[var])
+                nc_var = _create_var(group,
+                                     name=var,
+                                     dtype=dtype,
+                                     dimensions=(name, ),
+                                     attributes=nc_vars[var])
             else:
-                nc_var = _create_var(group, name=var, dtype=dtype, attributes=nc_vars[var])
+                nc_var = _create_var(group,
+                                     name=var,
+                                     dtype=dtype,
+                                     attributes=nc_vars[var])
         for ncattr in list(nc_vars[var].keys()):
             if ncattr not in _NOT_ATTRS:
                 attr_value = nc_vars[var][ncattr]
@@ -193,7 +248,8 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[var]
                 if has_dim:
-                    if any([dtype is current_type for current_type in _STR_TYPES]):
+                    if any(
+                        [dtype is current_type for current_type in _STR_TYPES]):
                         group.variables[var][:] = np.array(data_entry.data)
                     else:
                         group.variables[var][:] = np.ma.array(data_entry)
