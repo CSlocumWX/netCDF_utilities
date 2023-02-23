@@ -155,6 +155,7 @@ def _add_to_group(group, data, config, nc_format):
                     group.variables[dim][:] = data[nc_dims[dim]['dat']]
     nc_vars = config['variables']
     for var in nc_vars:
+        # get data type if defined for variable
         if nc_vars[var]['dtype'] == 'str':
             if nc_format != 'NETCDF4':
                 dtype = 'c'
@@ -162,6 +163,13 @@ def _add_to_group(group, data, config, nc_format):
                 dtype = np.str
         else:
             dtype = np.dtype(nc_vars[var]['dtype'])
+        # get fill value if defined for variable
+        fill_value = None
+        for key in nc_vars[var]:
+            if key in ['fill_value', '_FillValue']:
+                fill_value = nc_vars[var][key]
+                break
+        # get the dimensions for the variable
         has_dim = 'dim' in nc_vars[var]
         if has_dim:
             dimensions = nc_vars[var]['dim']
@@ -177,10 +185,12 @@ def _add_to_group(group, data, config, nc_format):
                 nc_var = _create_var(group, name=var, dtype=dtype, dimensions=(name,), attributes=nc_vars[var])
             else:
                 nc_var = _create_var(group, name=var, dtype=dtype, attributes=nc_vars[var])
+        # add the attributes to the variable
         for ncattr in list(nc_vars[var].keys()):
             if ncattr not in _NOT_ATTRS:
                 attr_value = nc_vars[var][ncattr]
                 _add_attribute(nc_var, ncattr, attr_value, dtype)
+        # get the data if it exists
         if var in data:
             if dtype == 'c':
                 data_entry = netCDF4.stringtoarr(data[var], len(data[var]))
@@ -192,6 +202,9 @@ def _add_to_group(group, data, config, nc_format):
                     if any([dtype is current_type for current_type in _STR_TYPES]):
                         group.variables[var][:] = np.array(data_entry.data)
                     else:
-                        group.variables[var][:] = np.ma.array(data_entry)
+                        data_entry = np.ma.array(data_entry)
+                        if fill_value is not None:
+                            data_entry = data_entry.filled(fill_value)
+                        group.variables[var][:] = data_entry
                 else:
                     group.variables[var][0] = data_entry
