@@ -137,34 +137,40 @@ def _add_to_group(group, data, config, nc_format):
         for attr in attrs:
             group.setncattr(attr, attrs[attr])
     nc_dims = config['dimensions']
-    for dim in nc_dims:
-        ncattrs = list(nc_dims[dim].keys())
+    for dimname in nc_dims:
+        ncattrs = list(nc_dims[dimname].keys())
         if 'size' in ncattrs:
-            group.createDimension(dim, nc_dims[dim]['size'])
-        elif 'dat' in ncattrs and isinstance(data[nc_dims[dim]['dat']],
+            # use the size from the configuration file
+            size = nc_dims[dimname]['size']
+        elif 'dat' in ncattrs and isinstance(data[nc_dims[dimname]['dat']],
                                              _ARRAY_TYPES):
-            group.createDimension(dim,
-                                  np.ma.array(data[nc_dims[dim]['dat']]).size)
-        elif 'dat' in ncattrs and isinstance(data[nc_dims[dim]['dat']],
+            # use the array for the size
+            size = np.ma.array(data[nc_dims[dimname]['dat']]).size
+        elif 'dat' in ncattrs and isinstance(data[nc_dims[dimname]['dat']],
                                              _SCALAR_TYPES):
-            group.createDimension(dim, data[nc_dims[dim]['dat']])
+            # scalar assumes the data value is the size
+            size = data[nc_dims[dimname]['dat']]
         else:
-            group.createDimension(dim, None)
+            # Set size to None for unlimited dimension
+            size = None
+        # Create dimension
+        group.createDimension(dimname, size=size)
+        # Create a variable if the dimname is a variable
         var_create = True
         if 'var' in ncattrs:
-            var_create = nc_dims[dim]['var']
+            var_create = nc_dims[dimname]['var']
         if var_create:
-            dtype = np.dtype(nc_dims[dim]['dtype'])
+            dtype = np.dtype(nc_dims[dimname]['dtype'])
             nc_dim = _create_var(group,
-                                 varname=dim,
-                                 datatype=np.dtype(nc_dims[dim]['dtype']),
-                                 dimensions=(dim),
-                                 attributes=nc_dims[dim])
+                                 varname=dimname,
+                                 datatype=np.dtype(nc_dims[dimname]['dtype']),
+                                 dimensions=(dimname),
+                                 attributes=nc_dims[dimname])
             for ncattr in ncattrs:
                 if ncattr not in _NOT_ATTRS:
-                    _add_attribute(nc_dim, ncattr, nc_dims[dim][ncattr], dtype)
+                    _add_attribute(nc_dim, ncattr, nc_dims[dimname][ncattr], dtype)
                 elif ncattr == 'dat':
-                    group.variables[dim][:] = data[nc_dims[dim]['dat']]
+                    group.variables[dimname][:] = data[nc_dims[dimname]['dat']]
     nc_vars = config['variables']
     for var in nc_vars:
         # get data type if defined for variable
