@@ -18,10 +18,12 @@ import toml
 import numpy as np
 import netCDF4
 
+# Climate and Forecast Convention global attributes
 _STANDARD_GLOBAL_ATTR = [
     'title', 'institution', 'source', 'history', 'references', 'comments',
     'Conventions'
 ]
+# Attribute Convention for Data Discovery (ACDD) attributes
 _ACDD_GLOBAL_ATTR = [
     'summary', 'id', 'naming_authority', 'source', 'processing_level',
     'acknowledgment', 'license', 'standard_name_vocabulary', 'date_created',
@@ -48,6 +50,8 @@ _NC4_OPTIONS = [
     'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value'
 ]
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
+
+# Tuples of types
 _SCALAR_TYPES = (float, int, np.float, np.int)
 _ARRAY_TYPES = (np.ndarray, np.ma.core.MaskedArray, list, tuple)
 _STR_TYPES = (str, np.str, np.character, np.unicode)
@@ -132,10 +136,12 @@ def _add_to_group(group, data, config, nc_format):
                 attribute_value = np.ma.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
+    # add group level attributes
     if 'attributes' in config:
         attrs = config['attributes']
         for attr in attrs:
             group.setncattr(attr, attrs[attr])
+    # Process dimensions
     nc_dims = config['dimensions']
     for dimname in nc_dims:
         ncattrs = list(nc_dims[dimname].keys())
@@ -168,75 +174,74 @@ def _add_to_group(group, data, config, nc_format):
                                  attributes=nc_dims[dimname])
             for ncattr in ncattrs:
                 if ncattr not in _NOT_ATTRS:
-                    _add_attribute(nc_dim, ncattr, nc_dims[dimname][ncattr], dtype)
+                    _add_attribute(nc_dim, ncattr, nc_dims[dimname][ncattr],
+                                   dtype)
                 elif ncattr == 'dat':
                     group.variables[dimname][:] = data[nc_dims[dimname]['dat']]
+    # Add non-dimension variables
     nc_vars = config['variables']
-    for var in nc_vars:
+    for varname in nc_vars:
         # get data type if defined for variable
-        if nc_vars[var]['dtype'] == 'str':
+        if nc_vars[varname]['dtype'] == 'str':
+            # Handle string vs char
             if nc_format != 'NETCDF4':
                 dtype = 'c'
             else:
                 dtype = np.str
         else:
-            dtype = np.dtype(nc_vars[var]['dtype'])
+            # make user dtype a numpy.dtype
+            dtype = np.dtype(nc_vars[varname]['dtype'])
         # get fill value if defined for variable
         fill_value = None
-        for key in nc_vars[var]:
+        for key in nc_vars[varname]:
             if key in ['fill_value', '_FillValue']:
-                fill_value = nc_vars[var][key]
+                fill_value = nc_vars[varname][key]
                 break
         # get the dimensions for the variable
-        has_dim = 'dim' in nc_vars[var]
+        has_dim = 'dim' in nc_vars[varname]
         if has_dim:
-            dimensions = nc_vars[var]['dim']
-            assert all(dim in nc_dims for dim in dimensions), \
-                "One of the dimensions for %s does not exist" % var
-            nc_var = _create_var(group,
-                                 varname=var,
-                                 datatype=dtype,
-                                 dimensions=(dimensions),
-                                 attributes=nc_vars[var])
+            dimensions = nc_vars[varname]['dim']
+            assert all(dimname in nc_dims for dimname in dimensions), \
+                "One of the dimensions for %s does not exist" % varname
+            dimensions = (dimensions)
         else:
             if dtype == 'c':
-                size = len(data[var])
-                name = "strdim%02d" % size
-                if name not in nc_vars:
-                    group.createDimension(name, size)
-                nc_var = _create_var(group,
-                                     varname=var,
-                                     datatype=dtype,
-                                     dimensions=(name, ),
-                                     attributes=nc_vars[var])
+                size = len(data[varname])
+                dimname = "strdim%02d" % size
+                if dimname not in nc_vars:
+                    group.createDimension(dimname, size)
+                dimensions = (dimname, )
             else:
-                nc_var = _create_var(group,
-                                     varname=var,
-                                     datatype=dtype,
-                                     attributes=nc_vars[var])
+                dimensions = None
+        nc_var = _create_var(group,
+                             varname=varname,
+                             datatype=dtype,
+                             dimensions=dimensions,
+                             attributes=nc_vars[varname])
         # add the attributes to the variable
-        for ncattr in list(nc_vars[var].keys()):
+        for ncattr in list(nc_vars[varname].keys()):
             if ncattr not in _NOT_ATTRS:
-                attr_value = nc_vars[var][ncattr]
+                attr_value = nc_vars[varname][ncattr]
                 _add_attribute(nc_var, ncattr, attr_value, dtype)
         # get the data if it exists
-        if var in data:
+        if varname in data:
             if dtype == 'c':
-                data_entry = netCDF4.stringtoarr(data[var], len(data[var]))
+                data_entry = netCDF4.stringtoarr(data[varname],
+                                                 len(data[varname]))
                 for count, char in enumerate(data_entry):
-                    group.variables[var][count] = char
+                    group.variables[varname][count] = char
             else:
-                data_entry = data[var]
+                data_entry = data[varname]
                 if has_dim:
                     if isinstance(dtype, _STR_TYPES):
-                        group.variables[var][:] = np.array(data_entry.data)
+                        data_entry = np.array(data_entry.data)
                     else:
                         data_entry = np.ma.array(data_entry)
                         if fill_value is not None:
                             data_entry = data_entry.filled(fill_value)
-                        group.variables[var][:] = data_entry
+                    group.variables[varname][:] = data_entry
                 else:
-                    group.variables[var][0] = data_entry
+                    group.variables[varname][0] = data_entry
 
 
 def ncgen(filename,
