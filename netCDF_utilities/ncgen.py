@@ -3,7 +3,7 @@ Generates a NetCDF file.
 
 Attributes
 ----------
-_standard_global_attr : list
+_STANDARD_GLOBAL_ATTR : list
     List of the CF complaint NetCDF standard global attributes
 """
 # Standard library
@@ -18,11 +18,11 @@ import toml
 import numpy as np
 import netCDF4
 
-_standard_global_attr = [
+_STANDARD_GLOBAL_ATTR = [
     'title', 'institution', 'source', 'history', 'references', 'comments',
     'Conventions'
 ]
-_acdd_global_attr = [
+_ACDD_GLOBAL_ATTR = [
     'summary', 'id', 'naming_authority', 'source', 'processing_level',
     'acknowledgment', 'license', 'standard_name_vocabulary', 'date_created',
     'creator_name', 'creator_email', 'creator_url', 'project', 'publisher_name',
@@ -147,7 +147,7 @@ def ncgen(filename,
                              format=nc_format)
     nc_attrs = nc_config['global_attributes']
     for global_attr in nc_attrs:
-        if global_attr not in _standard_global_attr + _acdd_global_attr:
+        if global_attr not in _STANDARD_GLOBAL_ATTR + _ACDD_GLOBAL_ATTR:
             warnings.warn(
                 "%s not in list of standard global attributes or ACDD" %
                 global_attr)
