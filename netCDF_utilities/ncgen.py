@@ -89,94 +89,6 @@ def _create_var(nc_fid, varname, datatype, dimensions=None, attributes=None):
     return variable
 
 
-def ncgen(filename,
-          data,
-          nc_config,
-          nc_format='NETCDF4',
-          return_instance=False,
-          clobber=False):
-    """
-    Generate a NetCDF file.
-
-    Using input, given data, and configuration file create a new NetCDF file.
-
-    Parameters
-    ----------
-    filename : str
-        string containing the filename and path
-    data : dict
-        Python dictionary containing appropriate data
-    nc_config : dict or file path
-        Configuration options for globel attributes,
-        dimensions, and variables
-        Either as a dict or toml/json file
-    nc_format : str (default='NETCDF4')
-        See netCDF4 documentation for options
-    return_instance : Boolean
-        If you plan to append, get the instance of the NetCDF object
-    clobber : Boolean
-        netCDF4 can't open or delete bad NetCDF files. As a safeguard,
-        the files must be manually removed
-
-    Returns
-    -------
-    nc_fid : netCDF4.Dataset or None
-        Dataset instance if return_instance = True
-    """
-    if os.path.exists(filename):
-        if clobber:
-            os.remove(filename)
-        else:
-            raise IOError("NetCDF file already exists: %s" % filename)
-    if nc_format not in netCDF4._netCDF4._format_dict:
-        raise ValueError(nc_format + " not a valid netCDF4 module format")
-    if not isinstance(nc_config, dict):
-        ext = os.path.basename(nc_config).split('.')[-1]
-        if ext == 'json':
-            nc_config = json.load(open(nc_config, 'r'),
-                                  object_pairs_hook=OrderedDict)
-        elif ext == 'toml':
-            nc_config = toml.load(open(nc_config, 'r'), _dict=OrderedDict)
-        else:
-            raise IOError(
-                "The following file extension for the configuration file is not supported: "
-                + ext)
-    nc_fid = netCDF4.Dataset(filename,
-                             mode='w',
-                             clobber=clobber,
-                             format=nc_format)
-    nc_attrs = nc_config['global_attributes']
-    for global_attr in nc_attrs:
-        if global_attr not in _STANDARD_GLOBAL_ATTR + _ACDD_GLOBAL_ATTR:
-            warnings.warn(
-                "%s not in list of standard global attributes or ACDD" %
-                global_attr)
-        setattr(nc_fid, global_attr, nc_attrs[global_attr])
-    date_created = "%sZ" % datetime.datetime.utcnow().isoformat(
-        sep='T', timespec='milliseconds')
-    history = 'Created ' + date_created
-    if 'history' in nc_attrs:
-        history += ' ' + nc_attrs['history']
-    nc_fid.history = history
-    nc_fid.date_created = date_created
-    nc_fid.date_modified = date_created
-
-    if 'global_attributes' in data:
-        for attr in data['global_attributes']:
-            setattr(nc_fid, attr, data['global_attributes'][attr])
-    if 'groups' in nc_config:
-        for groupname in nc_config['groups']:
-            group = nc_fid.createGroup(groupname)
-            _add_to_group(group, data['groups'][groupname],
-                          nc_config['groups'][groupname], nc_format)
-    else:
-        _add_to_group(nc_fid, data, nc_config, nc_format)
-    nc_fid.close()
-    if return_instance:
-        nc_fid = netCDF4.Dataset(filename, mode='a')
-        return nc_fid
-
-
 def _add_to_group(group, data, config, nc_format):
     """
     Add to a group.
@@ -289,7 +201,7 @@ def _add_to_group(group, data, config, nc_format):
                 nc_var = _create_var(group,
                                      varname=var,
                                      datatype=dtype,
-                                     dimensions=(name,),
+                                     dimensions=(name, ),
                                      attributes=nc_vars[var])
             else:
                 nc_var = _create_var(group,
@@ -319,3 +231,88 @@ def _add_to_group(group, data, config, nc_format):
                         group.variables[var][:] = data_entry
                 else:
                     group.variables[var][0] = data_entry
+
+
+def ncgen(filename,
+          data,
+          nc_config,
+          nc_format='NETCDF4',
+          return_instance=False,
+          clobber=False):
+    """
+    Generate a NetCDF file.
+
+    Using input, given data, and configuration file create a new NetCDF file.
+
+    Parameters
+    ----------
+    filename : str
+        string containing the filename and path
+    data : dict
+        Python dictionary containing appropriate data
+    nc_config : dict or file path
+        Configuration options for globel attributes,
+        dimensions, and variables
+        Either as a dict or toml/json file
+    nc_format : str (default='NETCDF4')
+        See netCDF4 documentation for options
+    return_instance : Boolean
+        If you plan to append, get the instance of the NetCDF object
+    clobber : Boolean
+        netCDF4 can't open or delete bad NetCDF files. As a safeguard,
+        the files must be manually removed
+
+    Returns
+    -------
+    nc_fid : netCDF4.Dataset or None
+        Dataset instance if return_instance = True
+    """
+    if os.path.exists(filename):
+        if clobber:
+            os.remove(filename)
+        else:
+            raise IOError("NetCDF file already exists: %s" % filename)
+    if nc_format not in netCDF4._netCDF4._format_dict:
+        raise ValueError(nc_format + " not a valid netCDF4 module format")
+    if not isinstance(nc_config, dict):
+        ext = os.path.basename(nc_config).split('.')[-1]
+        if ext == 'json':
+            nc_config = json.load(open(nc_config, 'r'),
+                                  object_pairs_hook=OrderedDict)
+        elif ext == 'toml':
+            nc_config = toml.load(open(nc_config, 'r'), _dict=OrderedDict)
+        else:
+            raise IOError(
+                "The following file extension for the configuration file is not supported: "
+                + ext)
+    with netCDF4.Dataset(filename, mode='w', clobber=clobber,
+                         format=nc_format) as nc_fid:
+        nc_attrs = nc_config['global_attributes']
+        for global_attr in nc_attrs:
+            if global_attr not in _STANDARD_GLOBAL_ATTR + _ACDD_GLOBAL_ATTR:
+                warnings.warn(
+                    "%s not in list of standard global attributes or ACDD" %
+                    global_attr)
+            setattr(nc_fid, global_attr, nc_attrs[global_attr])
+        date_created = "%sZ" % datetime.datetime.utcnow().isoformat(
+            sep='T', timespec='milliseconds')
+        history = 'Created ' + date_created
+        if 'history' in nc_attrs:
+            history += ' ' + nc_attrs['history']
+        nc_fid.history = history
+        nc_fid.date_created = date_created
+        nc_fid.date_modified = date_created
+
+        if 'global_attributes' in data:
+            for attr in data['global_attributes']:
+                setattr(nc_fid, attr, data['global_attributes'][attr])
+        if 'groups' in nc_config:
+            for groupname in nc_config['groups']:
+                group = nc_fid.createGroup(groupname)
+                _add_to_group(group, data['groups'][groupname],
+                              nc_config['groups'][groupname], nc_format)
+        else:
+            _add_to_group(nc_fid, data, nc_config, nc_format)
+    if return_instance:
+        nc_fid = netCDF4.Dataset(filename, mode='a')
+        return nc_fid
