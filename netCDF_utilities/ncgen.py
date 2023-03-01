@@ -1,17 +1,22 @@
 """
-Generates a NetCDF file
+Generates a NetCDF file.
 
 Attributes
 ----------
 _standard_global_attr : list
     List of the CF complaint NetCDF standard global attributes
 """
+# Standard library
 from __future__ import division, print_function, absolute_import
-import netCDF4
-import datetime
-import numpy as np
 import os
+import json
 import warnings
+import datetime
+from collections import OrderedDict
+# community packages
+import toml
+import numpy as np
+import netCDF4
 
 _standard_global_attr = [
     'title', 'institution', 'source', 'history', 'references', 'comments',
@@ -43,12 +48,33 @@ _NC4_OPTIONS = [
     'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value'
 ]
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
-_SCALAR_TYPES = [float, int, np.float, np.int]
-_ARRAY_TYPES = [np.ndarray, np.ma.core.MaskedArray, list, tuple]
-_STR_TYPES = [str, np.str, np.character, np.unicode]
+_SCALAR_TYPES = (float, int, np.float, np.int)
+_ARRAY_TYPES = (np.ndarray, np.ma.core.MaskedArray, list, tuple)
+_STR_TYPES = (str, np.str, np.character, np.unicode)
 
 
-def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
+def _create_var(nc_fid, varname, datatype, dimensions=None, attributes=None):
+    """
+    Create a new variable.
+
+    Parameters
+    ----------
+    nc_fid : netCDF4.Dataset
+        Dataset instance
+    varname : str
+        Variable name
+    datatype : str
+        Variable date type
+    dimensions : array-like, optional
+        Variable dimensions (must already exist)
+    attributes : array-like, optional
+        Variable attributes including fill_value and compression
+
+    Returns
+    -------
+    var : netCDF4.Variable
+        Instance of the Variable class
+    """
     if dimensions is None:
         dimensions = ()
     if attributes is None:
@@ -58,8 +84,9 @@ def _create_var(nc_fid, name, dtype, dimensions=None, attributes=None):
             key: value
             for key, value in attributes.items() if key in _NC4_OPTIONS
         }
-    var = nc_fid.createVariable(name, dtype, dimensions, **attributes)
-    return var
+    variable = nc_fid.createVariable(varname, datatype, dimensions,
+                                     **attributes)
+    return variable
 
 
 def ncgen(filename,
@@ -69,7 +96,9 @@ def ncgen(filename,
           return_instance=False,
           clobber=False):
     """
-    generates a NetCDF file based on a given data and configuration file
+    Generate a NetCDF file.
+
+    Using input, given data, and configuration file create a new NetCDF file.
 
     Parameters
     ----------
@@ -88,6 +117,11 @@ def ncgen(filename,
     clobber : Boolean
         netCDF4 can't open or delete bad NetCDF files. As a safeguard,
         the files must be manually removed
+
+    Returns
+    -------
+    nc_fid : netCDF4.Dataset or None
+        Dataset instance if return_instance = True
     """
     if os.path.exists(filename):
         if clobber:
@@ -97,14 +131,11 @@ def ncgen(filename,
     if nc_format not in netCDF4._netCDF4._format_dict:
         raise ValueError(nc_format + " not a valid netCDF4 module format")
     if not isinstance(nc_config, dict):
-        from collections import OrderedDict
         ext = os.path.basename(nc_config).split('.')[-1]
         if ext == 'json':
-            import json
             nc_config = json.load(open(nc_config, 'r'),
                                   object_pairs_hook=OrderedDict)
         elif ext == 'toml':
-            import toml
             nc_config = toml.load(open(nc_config, 'r'), _dict=OrderedDict)
         else:
             raise IOError(
@@ -147,20 +178,45 @@ def ncgen(filename,
 
 
 def _add_to_group(group, data, config, nc_format):
+    """
+    Add to a group.
+
+    In a netCDF4.Dataset, add to a group.
+
+    Parameters
+    ----------
+    group : netCDF4.Group
+        The existing group instance
+    data : dict
+        The data to be added to the group
+    config : dict
+        configuration information for group
+    nc_format : str
+        the NetCDF format
+    """
+
     def _add_attribute(obj, attribute, attribute_value, dtype):
+        """
+        Add attribute.
+
+        Parameters
+        ----------
+        obj : netCDF class instance
+            The class/level to add attribute
+        attribute : str
+            the attribute name (key)
+        attribute_value : object
+            any valid data type for an attribute
+        dtype : type
+            the data type for the attribute_value
+        """
         if attribute not in [
                 "add_offset", "scale_factor", "least_significant_digit",
                 "actual_range"
         ]:
-            if any([
-                    isinstance(attribute_value, current_type)
-                    for current_type in _SCALAR_TYPES
-            ]):
+            if isinstance(attribute_value, _SCALAR_TYPES):
                 attribute_value = np.dtype(dtype).type(attribute_value)
-            elif any([
-                    isinstance(attribute_value, current_type)
-                    for current_type in _ARRAY_TYPES
-            ]):
+            elif isinstance(attribute_value, _ARRAY_TYPES):
                 attribute_value = np.ma.array(attribute_value, dtype=dtype)
         obj.setncattr(attribute, attribute_value)
 
@@ -173,16 +229,12 @@ def _add_to_group(group, data, config, nc_format):
         ncattrs = list(nc_dims[dim].keys())
         if 'size' in ncattrs:
             group.createDimension(dim, nc_dims[dim]['size'])
-        elif 'dat' in ncattrs and any([
-                isinstance(data[nc_dims[dim]['dat']], current_type)
-                for current_type in _ARRAY_TYPES
-        ]):
+        elif 'dat' in ncattrs and isinstance(data[nc_dims[dim]['dat']],
+                                             _ARRAY_TYPES):
             group.createDimension(dim,
                                   np.ma.array(data[nc_dims[dim]['dat']]).size)
-        elif 'dat' in ncattrs and any([
-                isinstance(data[nc_dims[dim]['dat']], current_type)
-                for current_type in _SCALAR_TYPES
-        ]):
+        elif 'dat' in ncattrs and isinstance(data[nc_dims[dim]['dat']],
+                                             _SCALAR_TYPES):
             group.createDimension(dim, data[nc_dims[dim]['dat']])
         else:
             group.createDimension(dim, None)
@@ -192,8 +244,8 @@ def _add_to_group(group, data, config, nc_format):
         if var_create:
             dtype = np.dtype(nc_dims[dim]['dtype'])
             nc_dim = _create_var(group,
-                                 name=dim,
-                                 dtype=np.dtype(nc_dims[dim]['dtype']),
+                                 varname=dim,
+                                 datatype=np.dtype(nc_dims[dim]['dtype']),
                                  dimensions=(dim),
                                  attributes=nc_dims[dim])
             for ncattr in ncattrs:
@@ -224,8 +276,8 @@ def _add_to_group(group, data, config, nc_format):
             assert all(dim in nc_dims for dim in dimensions), \
                 "One of the dimensions for %s does not exist" % var
             nc_var = _create_var(group,
-                                 name=var,
-                                 dtype=dtype,
+                                 varname=var,
+                                 datatype=dtype,
                                  dimensions=(dimensions),
                                  attributes=nc_vars[var])
         else:
@@ -235,14 +287,14 @@ def _add_to_group(group, data, config, nc_format):
                 if name not in nc_vars:
                     group.createDimension(name, size)
                 nc_var = _create_var(group,
-                                     name=var,
-                                     dtype=dtype,
-                                     dimensions=(name, ),
+                                     varname=var,
+                                     datatype=dtype,
+                                     dimensions=(name,),
                                      attributes=nc_vars[var])
             else:
                 nc_var = _create_var(group,
-                                     name=var,
-                                     dtype=dtype,
+                                     varname=var,
+                                     datatype=dtype,
                                      attributes=nc_vars[var])
         # add the attributes to the variable
         for ncattr in list(nc_vars[var].keys()):
@@ -253,13 +305,12 @@ def _add_to_group(group, data, config, nc_format):
         if var in data:
             if dtype == 'c':
                 data_entry = netCDF4.stringtoarr(data[var], len(data[var]))
-                for count, char in enumerate(data[var]):
-                    group.variables[var][count] = data_entry[count]
+                for count, char in enumerate(data_entry):
+                    group.variables[var][count] = char
             else:
                 data_entry = data[var]
                 if has_dim:
-                    if any(
-                        [dtype is current_type for current_type in _STR_TYPES]):
+                    if isinstance(dtype, _STR_TYPES):
                         group.variables[var][:] = np.array(data_entry.data)
                     else:
                         data_entry = np.ma.array(data_entry)
