@@ -233,7 +233,7 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[varname]
                 if has_dim:
-                    if isinstance(dtype, _STR_TYPES):
+                    if any([dtype is current_type for current_type in _STR_TYPES]):
                         data_entry = np.array(data_entry.data)
                     else:
                         data_entry = np.ma.array(data_entry)
