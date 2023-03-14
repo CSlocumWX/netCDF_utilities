@@ -52,7 +52,7 @@ _NC4_OPTIONS = [
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 
 # Tuples of types
-_SCALAR_TYPES = (float, int, np.float32, np.float64, np.int)
+_SCALAR_TYPES = (float, int, np.float32, np.float64, np.int16, np.int32, np.int64)
 _ARRAY_TYPES = (np.ndarray, np.ma.core.MaskedArray, list, tuple)
 _STR_TYPES = (str, np.str, np.character, np.unicode)
 
