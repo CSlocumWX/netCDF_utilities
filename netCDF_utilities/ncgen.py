@@ -187,7 +187,7 @@ def _add_to_group(group, data, config, nc_format):
             if nc_format != 'NETCDF4':
                 dtype = 'c'
             else:
-                dtype = np.str
+                dtype = np.str_
         else:
             # make user dtype a numpy.dtype
             dtype = np.dtype(nc_vars[varname]['dtype'])
