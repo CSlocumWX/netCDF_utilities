@@ -263,10 +263,11 @@ def _add_to_group(group, data, config, nc_format):
                         scale_factor = nc_vars[varname]['scale_factor']
                         add_offset = nc_vars[varname]['add_offset']
                     except KeyError as err:
-                        msg = "scale_factor and add_offset must be defined" + \
-                              f" when using actual_range. Check {varname}."
-                        raise RuntimeError(msg) from err
-                    attr_value = _pack_unpack(attr_value,
+                        msg = "scale_factor and add_offset are not defined" + \
+                              f" for {varname}."
+                        warnings.warn(msg)
+                    else:
+                        attr_value = _pack_unpack(attr_value,
                                               scale_factor=scale_factor,
                                               add_offset=add_offset)
                 _add_attribute(nc_var, ncattr, attr_value, dtype)
