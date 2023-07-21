@@ -262,7 +262,7 @@ def _add_to_group(group, data, config, nc_format):
                     try:
                         scale_factor = nc_vars[varname]['scale_factor']
                         add_offset = nc_vars[varname]['add_offset']
-                    except KeyError as err:
+                    except KeyError:
                         msg = "scale_factor and add_offset are not defined" + \
                               f" for {varname}."
                         warnings.warn(msg)
