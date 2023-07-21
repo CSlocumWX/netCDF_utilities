@@ -305,14 +305,18 @@ def ncgen(filename,
                     "%s not in list of standard global attributes or ACDD" %
                     global_attr)
             setattr(nc_fid, global_attr, nc_attrs[global_attr])
-        date_created = "%sZ" % datetime.datetime.utcnow().isoformat(
-            sep='T', timespec='milliseconds')
+        if hasattr(nc_fid, "date_created"):
+            date_created = nc_fid.date_created
+        else:
+            date_created = "%sZ" % datetime.datetime.utcnow().isoformat(
+                sep='T', timespec='milliseconds')
+            nc_fid.date_created = date_created
+        if not hasattr(nc_fid, "date_modified"):
+            nc_fid.date_modified = date_created
         history = 'Created ' + date_created
         if 'history' in nc_attrs:
             history += ' ' + nc_attrs['history']
         nc_fid.history = history
-        nc_fid.date_created = date_created
-        nc_fid.date_modified = date_created
 
         if 'global_attributes' in data:
             for attr in data['global_attributes']:
