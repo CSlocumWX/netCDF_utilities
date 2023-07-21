@@ -50,11 +50,48 @@ _NC4_OPTIONS = [
     'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value'
 ]
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
+_PACK_ATTRS = [
+    "add_offset", "scale_factor", "least_significant_digit", "actual_range"
+]
 
 # Tuples of types
-_SCALAR_TYPES = (float, int, np.float32, np.float64, np.int16, np.int32, np.int64)
+_SCALAR_TYPES = (float, int, np.float32, np.float64, np.int16, np.int32,
+                 np.int64)
 _ARRAY_TYPES = (np.ndarray, np.ma.core.MaskedArray, list, tuple)
 _STR_TYPES = (str, np.str_, np.character, np.unicode_)
+
+# Attribute dtype for packing-related attributes
+# default unpacked attribute dtype
+_ATTR_UNPACK_DTYPE = np.float32
+
+
+def _pack_unpack(unpacked_value, scale_factor, add_offset):
+    """
+    Packs and unpacks input to ensure consistency.
+
+    Parameters
+    ----------
+    unpacked_value : array-like
+        The unpacked data (e.g., actual_range)
+    scale_factor : float
+        The value to scale with during packing
+    add_offset : float
+        The offset value for packing
+
+    Returns
+    -------
+    new_unpacked_value : array-like
+        The value that has been packed and unpacked
+    """
+    # To avoid introducing a bias into the unpacked values due to truncation
+    # when packing, round to the nearest integer rather than just truncating
+    # towards zero using NumPy's rint function
+    packed_value = np.rint(
+        (np.asarray(unpacked_value) - add_offset) / scale_factor)
+    # The unpacked data set to the default unpacked data type
+    new_unpacked_value = (packed_value * scale_factor +
+                          add_offset).astype(_ATTR_UNPACK_DTYPE)
+    return new_unpacked_value
 
 
 def _create_var(nc_fid, varname, datatype, dimensions=None, attributes=None):
@@ -110,7 +147,6 @@ def _add_to_group(group, data, config, nc_format):
     nc_format : str
         the NetCDF format
     """
-
     def _add_attribute(obj, attribute, attribute_value, dtype):
         """
         Add attribute.
@@ -126,14 +162,14 @@ def _add_to_group(group, data, config, nc_format):
         dtype : type
             the data type for the attribute_value
         """
-        if attribute not in [
-                "add_offset", "scale_factor", "least_significant_digit",
-                "actual_range"
-        ]:
-            if isinstance(attribute_value, _SCALAR_TYPES):
-                attribute_value = np.dtype(dtype).type(attribute_value)
-            elif isinstance(attribute_value, _ARRAY_TYPES):
-                attribute_value = np.ma.array(attribute_value, dtype=dtype)
+        if attribute in _PACK_ATTRS:
+            tmp_dtype = _ATTR_UNPACK_DTYPE
+        else:
+            tmp_dtype = dtype
+        if isinstance(attribute_value, _SCALAR_TYPES):
+            attribute_value = np.dtype(tmp_dtype).type(attribute_value)
+        elif isinstance(attribute_value, _ARRAY_TYPES):
+            attribute_value = np.ma.array(attribute_value, dtype=tmp_dtype)
         obj.setncattr(attribute, attribute_value)
 
     # add group level attributes
@@ -222,6 +258,17 @@ def _add_to_group(group, data, config, nc_format):
         for ncattr in list(nc_vars[varname].keys()):
             if ncattr not in _NOT_ATTRS:
                 attr_value = nc_vars[varname][ncattr]
+                if ncattr == 'actual_range':
+                    try:
+                        scale_factor = nc_vars[varname]['scale_factor']
+                        add_offset = nc_vars[varname]['add_offset']
+                    except KeyError as err:
+                        msg = "scale_factor and add_offset must be defined" + \
+                              f" when using actual_range. Check {varname}."
+                        raise RuntimeError(msg) from err
+                    attr_value = _pack_unpack(attr_value,
+                                              scale_factor=scale_factor,
+                                              add_offset=add_offset)
                 _add_attribute(nc_var, ncattr, attr_value, dtype)
         # get the data if it exists
         if varname in data:
@@ -233,7 +280,8 @@ def _add_to_group(group, data, config, nc_format):
             else:
                 data_entry = data[varname]
                 if has_dim:
-                    if any([dtype is current_type for current_type in _STR_TYPES]):
+                    if any(dtype is current_type
+                           for current_type in _STR_TYPES):
                         data_entry = np.array(data_entry.data)
                     else:
                         data_entry = np.ma.array(data_entry)
@@ -288,10 +336,11 @@ def ncgen(filename,
     if not isinstance(nc_config, dict):
         ext = os.path.basename(nc_config).split('.')[-1]
         if ext == 'json':
-            nc_config = json.load(open(nc_config, 'r'),
-                                  object_pairs_hook=OrderedDict)
+            with open(nc_config, mode='r', encoding='utf-8') as fid:
+                nc_config = json.load(fid, object_pairs_hook=OrderedDict)
         elif ext == 'toml':
-            nc_config = toml.load(open(nc_config, 'r'), _dict=OrderedDict)
+            with open(nc_config, mode='r', encoding='utf-8') as fid:
+                nc_config = toml.load(fid, _dict=OrderedDict)
         else:
             raise IOError(
                 "The following file extension for the configuration file is not supported: "
