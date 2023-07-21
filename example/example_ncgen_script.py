@@ -28,6 +28,10 @@ lons = np.linspace(0, 359)
 time = np.array([123456, 123457], dtype=np.int32)
 random_data = np.random.random((time.size, lats.size, lons.size)) * 75.
 
+# set a value to the max and min
+random_data[0, 0, 0] = 0.
+random_data[0, 0, 1] = 75.
+
 #####################################################################
 # First example: We have all our data and just want a NetCDF file
 data = {'lat': lats,
@@ -66,3 +70,14 @@ data['groups']['blah'].update({'lat': lats,
 
 nc_config = "./example_groups_nc_config.toml"
 ncgen('groups.nc', data, nc_config, clobber=True)
+
+#####################################################################
+# First example: We have all our data and just want a NetCDF file
+data = {'lat': lats,
+        'lon': lons,
+        'time': time,
+        'pwat': random_data}
+# Set  the example configuration file
+nc_config = "./example_nc_config_packed.toml"
+# Call ncgen
+ncgen('packed_ex.nc', data, nc_config, clobber=True)

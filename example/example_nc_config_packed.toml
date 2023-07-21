@@ -1,0 +1,41 @@
+[global_attributes]  # add your global attributes to this section of the file
+    source = "example_generate_netcdf_file.py"
+    Conventions = "CF-1.6"
+    institution = "Colorado State University"
+    title = "Example NetCDF file"
+
+[dimensions]  # NetCDF variable dimensions
+
+    [dimensions.time]
+        long_name = "time"
+        standard_name = "time"
+        calendar = "standard"
+        units = "hours since 1970-01-01"
+        dtype = "int32"
+        dat = "time"
+
+    [dimensions.latitude]
+        units = "degrees_north"
+        long_name = "latitude coordinate"
+        standard_name = "latitude"
+        dtype = "float32"
+        dat = "lat"
+
+    [dimensions.longitude]
+        long_name = "longitude coordinate"
+        standard_name = "longitude"
+        units = "degrees_east"
+        dtype = "float32"
+        dat = "lon"
+
+[variables]  # Variable section of the netCDF file
+
+    [variables.pwat]
+        long_name = "precipitable water in mass per unit area; forecast"
+        standard_name = "atmosphere_mass_content_of_water_vapor"
+        units = "kg m-2"
+        dtype = "int8"
+        scale_factor = 0.586
+        add_offset = 37.5
+        actual_range = [0.0, 75.0]
+        dim = [ "time", "latitude", "longitude",]
