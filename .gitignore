@@ -1,4 +1,5 @@
 /build/
 /dist/
 /netCDF_utilities.egg-info/
+__pycache__/
 *.nc
