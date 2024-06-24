@@ -47,7 +47,10 @@ _ACDD_GLOBAL_ATTR = [
 ]
 
 _NC4_OPTIONS = [
-    'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value'
+    'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value',
+    'compression', 'szip_coding', 'szip_pixels_per_block', 'blosc_shuffle',
+    'fletcher32', 'contiguous', 'chunksizes', 'endian', 'significant_digits',
+    'quantize_mode', 'chunk_cache',
 ]
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _PACK_ATTRS = [
