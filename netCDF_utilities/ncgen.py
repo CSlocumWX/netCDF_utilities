@@ -61,7 +61,7 @@ _PACK_ATTRS = [
 _SCALAR_TYPES = (float, int, np.float32, np.float64, np.int16, np.int32,
                  np.int64)
 _ARRAY_TYPES = (np.ndarray, np.ma.core.MaskedArray, list, tuple)
-_STR_TYPES = (str, np.str_, np.character, np.unicode_)
+_STR_TYPES = (str, np.str_, np.character)
 
 # Attribute dtype for packing-related attributes
 # default unpacked attribute dtype
