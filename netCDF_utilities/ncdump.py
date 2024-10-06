@@ -2,11 +2,15 @@
 Outputs NetCDF metadata
 """
 from __future__ import division, print_function, absolute_import
+from typing import Tuple
+import netCDF
 from netCDF_utilities.utils.hdfeos_attrs import hdfeos_attrs
 
 
-def ncdump(nc_fid, verb=True):
+def ncdump(nc_fid: netCDF4.Dataset, verb: bool = True) -> Tuple[list, list, list]:
     '''
+    Get NetCDF metadata.
+
     ncdump outputs dimensions, variables and their attribute information.
     The information is similar to that of NCAR's ncdump utility.
     ncdump requires a valid instance of Dataset.
@@ -52,7 +56,7 @@ def ncdump(nc_fid, verb=True):
         print("NetCDF Global Attributes:")
         for nc_attr in nc_attrs:
             print('\t%s:' % nc_attr, repr(nc_fid.getncattr(nc_attr)))
-    nc_dims = [dim for dim in nc_fid.dimensions]  # list of nc dimensions
+    nc_dims = list(dim for dim in nc_fid.dimensions)  # list of nc dimensions
     # Dimension shape information.
     if verb:
         print("NetCDF dimension information:")
@@ -61,7 +65,7 @@ def ncdump(nc_fid, verb=True):
             print("\t\tsize:", len(nc_fid.dimensions[dim]))
             print_ncattr(dim)
     # Variable information.
-    nc_vars = [var for var in nc_fid.variables]  # list of nc variables
+    nc_vars = list(var for var in nc_fid.variables)  # list of nc variables
     if verb:
         print("NetCDF variable information:")
         for var in nc_vars:

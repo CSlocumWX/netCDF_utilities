@@ -13,9 +13,12 @@ import json
 import warnings
 import datetime
 from collections import OrderedDict
+from typing import Optional, Union
+from numbers import Number
 # community packages
 import toml
 import numpy as np
+import numpy.typing as npt
 import netCDF4
 
 # Climate and Forecast Convention global attributes
@@ -47,10 +50,22 @@ _ACDD_GLOBAL_ATTR = [
 ]
 
 _NC4_OPTIONS = [
-    'zlib', 'complevel', 'shuffle', 'least_significant_digit', 'fill_value',
-    'compression', 'szip_coding', 'szip_pixels_per_block', 'blosc_shuffle',
-    'fletcher32', 'contiguous', 'chunksizes', 'endian', 'significant_digits',
-    'quantize_mode', 'chunk_cache',
+    'zlib',
+    'complevel',
+    'shuffle',
+    'least_significant_digit',
+    'fill_value',
+    'compression',
+    'szip_coding',
+    'szip_pixels_per_block',
+    'blosc_shuffle',
+    'fletcher32',
+    'contiguous',
+    'chunksizes',
+    'endian',
+    'significant_digits',
+    'quantize_mode',
+    'chunk_cache',
 ]
 _NOT_ATTRS = ['size', 'dtype', 'dat', 'dim', 'var'] + _NC4_OPTIONS
 _PACK_ATTRS = [
@@ -68,7 +83,8 @@ _STR_TYPES = (str, np.str_, np.character)
 _ATTR_UNPACK_DTYPE = np.float32
 
 
-def _pack_unpack(unpacked_value, scale_factor, add_offset):
+def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
+                 add_offset: Number) -> np.ndarray:
     """
     Packs and unpacks input to ensure consistency.
 
@@ -97,7 +113,11 @@ def _pack_unpack(unpacked_value, scale_factor, add_offset):
     return new_unpacked_value
 
 
-def _create_var(nc_fid, varname, datatype, dimensions=None, attributes=None):
+def _create_var(nc_fid: netCDF4.Dataset,
+                varname: str,
+                datatype: str,
+                dimensions: Optional[npt.ArrayLike] = None,
+                attributes: Optional[npt.ArrayLike] = None) -> netCDF4.Variable:
     """
     Create a new variable.
 
@@ -133,7 +153,8 @@ def _create_var(nc_fid, varname, datatype, dimensions=None, attributes=None):
     return variable
 
 
-def _add_to_group(group, data, config, nc_format):
+def _add_to_group(group: netCDF4.Group, data: dict, config: dict,
+                  nc_format: str) -> None:
     """
     Add to a group.
 
@@ -271,8 +292,8 @@ def _add_to_group(group, data, config, nc_format):
                         warnings.warn(msg)
                     else:
                         attr_value = _pack_unpack(attr_value,
-                                              scale_factor=scale_factor,
-                                              add_offset=add_offset)
+                                                  scale_factor=scale_factor,
+                                                  add_offset=add_offset)
                 _add_attribute(nc_var, ncattr, attr_value, dtype)
         # get the data if it exists
         if varname in data:
@@ -296,12 +317,12 @@ def _add_to_group(group, data, config, nc_format):
                     group.variables[varname][0] = data_entry
 
 
-def ncgen(filename,
-          data,
-          nc_config,
-          nc_format='NETCDF4',
-          return_instance=False,
-          clobber=False):
+def ncgen(filename: str,
+          data: dict,
+          nc_config: Union[str, dict],
+          nc_format: str = 'NETCDF4',
+          return_instance: bool = False,
+          clobber: bool = False) -> Union[None, netCDF4.Dataset]:
     """
     Generate a NetCDF file.
 
