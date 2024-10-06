@@ -13,13 +13,16 @@ import json
 import warnings
 import datetime
 from collections import OrderedDict
-from typing import Optional, Union
+from typing import Optional, Union, Any, NewType
 from numbers import Number
 # community packages
 import toml
 import numpy as np
 import numpy.typing as npt
 import netCDF4
+
+NCT_DSET_GRP = NewType('NCT_DSET_GRP', Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group])
+NCT_VAR = NewType('NCT_VAR', Union[netCDF4._netCDF4.Variable])
 
 # Climate and Forecast Convention global attributes
 _STANDARD_GLOBAL_ATTR = [
@@ -113,11 +116,11 @@ def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
     return new_unpacked_value
 
 
-def _create_var(nc_fid: netCDF4.Dataset,
+def _create_var(nc_fid: NCT_DSET_GRP,
                 varname: str,
                 datatype: str,
                 dimensions: Optional[npt.ArrayLike] = None,
-                attributes: Optional[npt.ArrayLike] = None) -> netCDF4.Variable:
+                attributes: Optional[npt.ArrayLike] = None) -> NCT_VAR:
     """
     Create a new variable.
 
@@ -153,7 +156,7 @@ def _create_var(nc_fid: netCDF4.Dataset,
     return variable
 
 
-def _add_to_group(group: netCDF4.Group, data: dict, config: dict,
+def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
                   nc_format: str) -> None:
     """
     Add to a group.
@@ -171,7 +174,8 @@ def _add_to_group(group: netCDF4.Group, data: dict, config: dict,
     nc_format : str
         the NetCDF format
     """
-    def _add_attribute(obj, attribute, attribute_value, dtype):
+    def _add_attribute(obj: NCT_VAR, attribute: str,
+                       attribute_value: Any, dtype: npt.DTypeLike):
         """
         Add attribute.
 
@@ -322,7 +326,7 @@ def ncgen(filename: str,
           nc_config: Union[str, dict],
           nc_format: str = 'NETCDF4',
           return_instance: bool = False,
-          clobber: bool = False) -> Union[None, netCDF4.Dataset]:
+          clobber: bool = False) -> Union[None, NCT_DSET_GRP]:
     """
     Generate a NetCDF file.
 
