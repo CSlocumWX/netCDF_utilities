@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "netCDF_utilities"
-version = '1.6'
 dynamic = ["version"]
 description = 'Utilities to use with the Unidata netCDF4 module'
 readme = "README.md"
 license = {file = "LICENSE"}
-authors = {name = 'Chris Slocum', email = 'Christopher.Slocum@colostate.edu'}
+authors = [
+    {name = 'Chris Slocum', email = 'Christopher.Slocum@colostate.edu'}
+]
 dependencies = [
   "toml",
   "numpy",
@@ -18,3 +19,6 @@ dependencies = [
 
 [project.urls]
 Repository = "https://github.com/CSlocumWX/netCDF_utilities"
+
+[tool.setuptools.dynamic]
+version = {attr = "netCDF_utilities.__version__"}
