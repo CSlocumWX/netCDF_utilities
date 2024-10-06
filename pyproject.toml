@@ -9,7 +9,7 @@ dynamic = ["version"]
 description = 'Utilities to use with the Unidata netCDF4 module'
 readme = "README.md"
 license = {file = "LICENSE"}
-authors = {name = 'Chris Slocum', email = 'Christopher.Slocum@colostate.edu'
+authors = {name = 'Chris Slocum', email = 'Christopher.Slocum@colostate.edu'}
 dependencies = [
   "toml",
   "numpy",
