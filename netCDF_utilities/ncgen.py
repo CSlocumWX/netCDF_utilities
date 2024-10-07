@@ -13,16 +13,17 @@ import json
 import warnings
 import datetime
 from collections import OrderedDict
-from typing import Optional, Union, Any, NewType
-from numbers import Number
+from typing import Optional, Union, Any
+from typing_extensions import TypeAlias
 # community packages
 import toml
 import numpy as np
 import numpy.typing as npt
 import netCDF4
 
-NCT_DSET_GRP = NewType('NCT_DSET_GRP', Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group])
-NCT_VAR = NewType('NCT_VAR', Union[netCDF4._netCDF4.Variable])
+Number = Union[int, float, np.floating]
+NCtDsetGrp: TypeAlias = Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group]
+NCtVar: TypeAlias = netCDF4._netCDF4.Variable
 
 # Climate and Forecast Convention global attributes
 _STANDARD_GLOBAL_ATTR = [
@@ -79,11 +80,12 @@ _PACK_ATTRS = [
 _SCALAR_TYPES = (float, int, np.float32, np.float64, np.int16, np.int32,
                  np.int64)
 _ARRAY_TYPES = (np.ndarray, np.ma.core.MaskedArray, list, tuple)
-_STR_TYPES = (str, np.str_, np.character)
-
+_CHAR_TYPE = np.dtype('S1')
+_STR_TYPE = np.dtype('<U')
+_STR_TYPES = (str, _CHAR_TYPE, _STR_TYPE)
 # Attribute dtype for packing-related attributes
 # default unpacked attribute dtype
-_ATTR_UNPACK_DTYPE = np.float32
+_AttrUnpackDtype = np.float32
 
 
 def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
@@ -112,15 +114,15 @@ def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
         (np.asarray(unpacked_value) - add_offset) / scale_factor)
     # The unpacked data set to the default unpacked data type
     new_unpacked_value = (packed_value * scale_factor +
-                          add_offset).astype(_ATTR_UNPACK_DTYPE)
+                          add_offset).astype(_AttrUnpackDtype)
     return new_unpacked_value
 
 
-def _create_var(nc_fid: NCT_DSET_GRP,
+def _create_var(nc_fid: NCtDsetGrp,
                 varname: str,
-                datatype: str,
+                datatype: npt.DTypeLike,
                 dimensions: Optional[npt.ArrayLike] = None,
-                attributes: Optional[npt.ArrayLike] = None) -> NCT_VAR:
+                attributes: Optional[dict] = None) -> NCtVar:
     """
     Create a new variable.
 
@@ -156,7 +158,7 @@ def _create_var(nc_fid: NCT_DSET_GRP,
     return variable
 
 
-def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
+def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
                   nc_format: str) -> None:
     """
     Add to a group.
@@ -174,7 +176,7 @@ def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
     nc_format : str
         the NetCDF format
     """
-    def _add_attribute(obj: NCT_VAR, attribute: str,
+    def _add_attribute(obj: NCtVar, attribute: str,
                        attribute_value: Any, dtype: npt.DTypeLike):
         """
         Add attribute.
@@ -191,11 +193,11 @@ def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
             the data type for the attribute_value
         """
         if attribute in _PACK_ATTRS:
-            tmp_dtype = _ATTR_UNPACK_DTYPE
+            tmp_dtype = _AttrUnpackDtype
         else:
             tmp_dtype = dtype
         if isinstance(attribute_value, _SCALAR_TYPES):
-            attribute_value = np.dtype(tmp_dtype).type(attribute_value)
+            attribute_value = tmp_dtype.type(attribute_value)
         elif isinstance(attribute_value, _ARRAY_TYPES):
             attribute_value = np.ma.array(attribute_value, dtype=tmp_dtype)
         obj.setncattr(attribute, attribute_value)
@@ -233,7 +235,7 @@ def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
             dtype = np.dtype(nc_dims[dimname]['dtype'])
             nc_dim = _create_var(group,
                                  varname=dimname,
-                                 datatype=np.dtype(nc_dims[dimname]['dtype']),
+                                 datatype=dtype,
                                  dimensions=(dimname),
                                  attributes=nc_dims[dimname])
             for ncattr in ncattrs:
@@ -249,9 +251,9 @@ def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
         if nc_vars[varname]['dtype'] == 'str':
             # Handle string vs char
             if nc_format != 'NETCDF4':
-                dtype = 'c'
+                dtype = _CHAR_TYPE
             else:
-                dtype = np.str_
+                dtype = _STR_TYPE
         else:
             # make user dtype a numpy.dtype
             dtype = np.dtype(nc_vars[varname]['dtype'])
@@ -269,7 +271,7 @@ def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
                 "One of the dimensions for %s does not exist" % varname
             dimensions = (dimensions)
         else:
-            if dtype == 'c':
+            if dtype == _CHAR_TYPE:
                 size = len(data[varname])
                 dimname = "strdim%02d" % size
                 if dimname not in nc_vars:
@@ -301,7 +303,7 @@ def _add_to_group(group: NCT_DSET_GRP, data: dict, config: dict,
                 _add_attribute(nc_var, ncattr, attr_value, dtype)
         # get the data if it exists
         if varname in data:
-            if dtype == 'c':
+            if dtype == _CHAR_TYPE:
                 data_entry = netCDF4.stringtoarr(data[varname],
                                                  len(data[varname]))
                 for count, char in enumerate(data_entry):
@@ -326,7 +328,7 @@ def ncgen(filename: str,
           nc_config: Union[str, dict],
           nc_format: str = 'NETCDF4',
           return_instance: bool = False,
-          clobber: bool = False) -> Union[None, NCT_DSET_GRP]:
+          clobber: bool = False) -> Union[None, NCtDsetGrp]:
     """
     Generate a NetCDF file.
 
@@ -362,21 +364,23 @@ def ncgen(filename: str,
             raise IOError("NetCDF file already exists: %s" % filename)
     if nc_format not in netCDF4._netCDF4._format_dict:
         raise ValueError(nc_format + " not a valid netCDF4 module format")
-    if not isinstance(nc_config, dict):
+    if isinstance(nc_config, dict):
+        nc_config_dict = nc_config
+    else:
         ext = os.path.basename(nc_config).split('.')[-1]
         if ext == 'json':
             with open(nc_config, mode='r', encoding='utf-8') as fid:
-                nc_config = json.load(fid, object_pairs_hook=OrderedDict)
+                nc_config_dict = json.load(fid, object_pairs_hook=OrderedDict)
         elif ext == 'toml':
             with open(nc_config, mode='r', encoding='utf-8') as fid:
-                nc_config = toml.load(fid, _dict=OrderedDict)
+                nc_config_dict = toml.load(fid, _dict=OrderedDict)
         else:
             raise IOError(
                 "The following file extension for the configuration file is not supported: "
                 + ext)
     with netCDF4.Dataset(filename, mode='w', clobber=clobber,
                          format=nc_format) as nc_fid:
-        nc_attrs = nc_config['global_attributes']
+        nc_attrs = nc_config_dict['global_attributes']
         for global_attr in nc_attrs:
             if global_attr not in _STANDARD_GLOBAL_ATTR + _ACDD_GLOBAL_ATTR:
                 warnings.warn(
@@ -399,13 +403,14 @@ def ncgen(filename: str,
         if 'global_attributes' in data:
             for attr in data['global_attributes']:
                 setattr(nc_fid, attr, data['global_attributes'][attr])
-        if 'groups' in nc_config:
-            for groupname in nc_config['groups']:
+        if 'groups' in nc_config_dict:
+            for groupname in nc_config_dict['groups']:
                 group = nc_fid.createGroup(groupname)
                 _add_to_group(group, data['groups'][groupname],
-                              nc_config['groups'][groupname], nc_format)
+                              nc_config_dict['groups'][groupname], nc_format)
         else:
-            _add_to_group(nc_fid, data, nc_config, nc_format)
+            _add_to_group(nc_fid, data, nc_config_dict, nc_format)
     if return_instance:
         nc_fid = netCDF4.Dataset(filename, mode='a')
         return nc_fid
+    return None

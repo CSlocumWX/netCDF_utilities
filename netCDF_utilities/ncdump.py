@@ -2,14 +2,15 @@
 Outputs NetCDF metadata
 """
 from __future__ import division, print_function, absolute_import
-from typing import Tuple, NewType, Union
+from typing import Tuple, Union
+from typing_extensions import TypeAlias
 import netCDF4
 from netCDF_utilities.utils.hdfeos_attrs import hdfeos_attrs
 
-NCT_DSET_GRP = NewType('NCT_DSET_GRP', Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group])
+NCtDsetGrp: TypeAlias = Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group]
 
 
-def ncdump(nc_fid: NCT_DSET_GRP, verb: bool = True) -> Tuple[list, list, list]:
+def ncdump(nc_fid: NCtDsetGrp, verb: bool = True) -> Tuple[list, list, list]:
     '''
     Get NetCDF metadata.
 
