@@ -85,7 +85,7 @@ _STR_TYPE = np.dtype('<U')
 _STR_TYPES = (str, _CHAR_TYPE, _STR_TYPE)
 # Attribute dtype for packing-related attributes
 # default unpacked attribute dtype
-_AttrUnpackDtype = np.float32
+_AttrUnpackDtype = np.dtype(np.float32)
 
 
 def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
