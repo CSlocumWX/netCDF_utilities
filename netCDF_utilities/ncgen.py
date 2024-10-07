@@ -21,7 +21,7 @@ import numpy as np
 import numpy.typing as npt
 import netCDF4
 
-Number = Union[int, float, np.floating]
+Number = Union[int, float, np.integer, np.floating]
 NCtDsetGrp: TypeAlias = Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group]
 NCtVar: TypeAlias = netCDF4._netCDF4.Variable
 
