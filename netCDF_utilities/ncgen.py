@@ -316,8 +316,8 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
                         data_entry = np.array(data_entry.data)
                     else:
                         data_entry = np.ma.array(data_entry)
-                        if fill_value is not None:
-                            data_entry = data_entry.filled(fill_value)
+                        if fill_value is not None and hasattr(data_entry, 'fill_value'):
+                            data_entry.fill_value = fill_value
                     group.variables[varname][:] = data_entry
                 else:
                     group.variables[varname][0] = data_entry
