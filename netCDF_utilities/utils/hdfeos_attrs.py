@@ -92,7 +92,7 @@ def hdfeos_attrs(ncid):
             item = line.strip("\t").split("=")
             key = item[0]
             if len(item) == 2:
-                attr = re.sub('[()\"\s+]', '', item[1])
+                attr = re.sub(r'[()"\s+]', '', item[1])
                 if ',' in attr:
                     attr = attr.split(',')
                 try:
