@@ -196,10 +196,11 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
             tmp_dtype = _AttrUnpackDtype
         else:
             tmp_dtype = dtype
-        if isinstance(attribute_value, _SCALAR_TYPES):
-            attribute_value = tmp_dtype.type(attribute_value)
-        elif isinstance(attribute_value, _ARRAY_TYPES):
-            attribute_value = np.ma.array(attribute_value, dtype=tmp_dtype)
+        if tmp_dtype not in _STR_TYPES:
+            if isinstance(attribute_value, _SCALAR_TYPES):
+                attribute_value = tmp_dtype.type(attribute_value)
+            elif isinstance(attribute_value, _ARRAY_TYPES):
+                attribute_value = np.ma.array(attribute_value, dtype=tmp_dtype)
         obj.setncattr(attribute, attribute_value)
 
     # add group level attributes
