@@ -91,21 +91,21 @@ _AttrUnpackDtype = np.dtype(np.float32)
 def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
                  add_offset: Number) -> np.ndarray:
     """
-    Packs and unpacks input to ensure consistency.
+    Pack and unpack input to ensure consistency.
 
     Parameters
     ----------
     unpacked_value : array-like
-        The unpacked data (e.g., actual_range)
+        The unpacked data (e.g., actual_range).
     scale_factor : float
-        The value to scale with during packing
+        The value to scale with during packing.
     add_offset : float
-        The offset value for packing
+        The offset value for packing.
 
     Returns
     -------
-    new_unpacked_value : array-like
-        The value that has been packed and unpacked
+    array-like
+        The value that has been packed and unpacked.
     """
     # To avoid introducing a bias into the unpacked values due to truncation
     # when packing, round to the nearest integer rather than just truncating
@@ -129,20 +129,20 @@ def _create_var(nc_fid: NCtDsetGrp,
     Parameters
     ----------
     nc_fid : netCDF4.Dataset
-        Dataset instance
+        Dataset instance.
     varname : str
-        Variable name
+        Variable name.
     datatype : str
-        Variable date type
+        Variable date type.
     dimensions : array-like, optional
-        Variable dimensions (must already exist)
+        Variable dimensions (must already exist).
     attributes : array-like, optional
-        Variable attributes including fill_value and compression
+        Variable attributes including fill_value and compression.
 
     Returns
     -------
-    var : netCDF4.Variable
-        Instance of the Variable class
+    netCDF4.Variable
+        Instance of the Variable class.
     """
     if dimensions is None:
         dimensions = ()
@@ -168,13 +168,13 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
     Parameters
     ----------
     group : netCDF4.Group
-        The existing group instance
+        The existing group instance.
     data : dict
-        The data to be added to the group
+        The data to be added to the group.
     config : dict
-        configuration information for group
+        Configuration information for group.
     nc_format : str
-        the NetCDF format
+        The NetCDF format.
     """
     def _add_attribute(obj: NCtVar, attribute: str,
                        attribute_value: Any, dtype: npt.DTypeLike):
@@ -184,13 +184,13 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
         Parameters
         ----------
         obj : netCDF class instance
-            The class/level to add attribute
+            The class/level to add attribute.
         attribute : str
-            the attribute name (key)
+            The attribute name (key).
         attribute_value : object
-            any valid data type for an attribute
+            Any valid data type for an attribute.
         dtype : type
-            the data type for the attribute_value
+            The data type for the attribute_value.
         """
         if attribute in _PACK_ATTRS:
             tmp_dtype = _AttrUnpackDtype
@@ -338,25 +338,25 @@ def ncgen(filename: str,
     Parameters
     ----------
     filename : str
-        string containing the filename and path
+        String containing the filename and path.
     data : dict
-        Python dictionary containing appropriate data
+        Python dictionary containing appropriate data.
     nc_config : dict or file path
         Configuration options for globel attributes,
-        dimensions, and variables
-        Either as a dict or toml/json file
+        dimensions, and variables.
+        Either as a dict or toml/json file.
     nc_format : str (default='NETCDF4')
-        See netCDF4 documentation for options
+        See netCDF4 documentation for options.
     return_instance : Boolean
-        If you plan to append, get the instance of the NetCDF object
+        If you plan to append, get the instance of the NetCDF object.
     clobber : Boolean
-        netCDF4 can't open or delete bad NetCDF files. As a safeguard,
-        the files must be manually removed
+        Whether to mannually remove the file since netCDF4 can't open
+        or delete bad NetCDF files.
 
     Returns
     -------
-    nc_fid : netCDF4.Dataset or None
-        Dataset instance if return_instance = True
+    netCDF4.Dataset or None
+        Dataset instance if return_instance = True.
     """
     if os.path.exists(filename):
         if clobber:
@@ -414,4 +414,4 @@ def ncgen(filename: str,
     if return_instance:
         nc_fid = netCDF4.Dataset(filename, mode='a')
         return nc_fid
-    return None
+    return
