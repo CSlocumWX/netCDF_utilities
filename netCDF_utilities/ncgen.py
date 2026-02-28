@@ -28,7 +28,7 @@ NCtVar: TypeAlias = netCDF4._netCDF4.Variable
 # Climate and Forecast Convention global attributes
 _STANDARD_GLOBAL_ATTR = [
     "title", "institution", "source", "history", "references", "comments",
-    "Conventions"
+    "Conventions",
 ]
 # Attribute Convention for Data Discovery (ACDD) attributes
 _ACDD_GLOBAL_ATTR = [
@@ -50,7 +50,7 @@ _ACDD_GLOBAL_ATTR = [
     "platform", "platform_vocabulary", "instrument", "instrument_vocabulary",
     "cdm_data_type", "metadata_link", "keywords", "keyword_vocabulary",
     "contributor_url", "contributor_type", "contributor_institution",
-    "contributor_email"
+    "contributor_email",
 ]
 
 _NC4_OPTIONS = [
@@ -73,7 +73,7 @@ _NC4_OPTIONS = [
 ]
 _NOT_ATTRS = ["size", "dtype", "dat", "dim", "var"] + _NC4_OPTIONS
 _PACK_ATTRS = [
-    "add_offset", "scale_factor", "least_significant_digit", "actual_range"
+    "add_offset", "scale_factor", "least_significant_digit", "actual_range",
 ]
 
 # Tuples of types
