@@ -189,10 +189,7 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
         dtype : type
             The data type for the attribute_value.
         """
-        if attribute in _PACK_ATTRS:
-            tmp_dtype = _AttrUnpackDtype
-        else:
-            tmp_dtype = dtype
+        tmp_dtype = _AttrUnpackDtype if attribute in _PACK_ATTRS else dtype
         if tmp_dtype not in _STR_TYPES:
             if isinstance(attribute_value, _SCALAR_TYPES):
                 attribute_value = tmp_dtype.type(attribute_value)
@@ -248,10 +245,7 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
         # get data type if defined for variable
         if nc_vars[varname]["dtype"] == "str":
             # Handle string vs char
-            if nc_format != "NETCDF4":
-                dtype = _CHAR_TYPE
-            else:
-                dtype = _STR_TYPE
+            dtype = _CHAR_TYPE if nc_format != "NETCDF4" else _STR_TYPE
         else:
             # make user dtype a numpy.dtype
             dtype = np.dtype(nc_vars[varname]["dtype"])
