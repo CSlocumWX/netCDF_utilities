@@ -118,7 +118,7 @@ _NC4_OPTIONS = [
     "quantize_mode",
     "chunk_cache",
 ]
-_NOT_ATTRS = ["size", "dtype", "dat", "dim", "var"] + _NC4_OPTIONS
+_NOT_ATTRS = ["size", "dtype", "dat", "dim", "var", *_NC4_OPTIONS]
 _PACK_ATTRS = [
     "add_offset",
     "scale_factor",
