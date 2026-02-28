@@ -360,7 +360,7 @@ def ncgen(filename: str,
         if clobber:
             os.remove(filename)
         else:
-            raise IOError("NetCDF file already exists: %s" % filename)
+            raise OSError("NetCDF file already exists: %s" % filename)
     if nc_format not in netCDF4._netCDF4._format_dict:
         raise ValueError(nc_format + " not a valid netCDF4 module format")
     if isinstance(nc_config, dict):
@@ -374,7 +374,7 @@ def ncgen(filename: str,
             with open(nc_config, mode="r", encoding="utf-8") as fid:
                 nc_config_dict = toml.load(fid, _dict=OrderedDict)
         else:
-            raise IOError(
+            raise OSError(
                 "The following file extension for the configuration file is not supported: "
                 + ext)
     with netCDF4.Dataset(filename, mode="w", clobber=clobber,
