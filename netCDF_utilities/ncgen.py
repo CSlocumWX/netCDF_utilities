@@ -24,6 +24,8 @@ Number = Union[int, float, np.integer, np.floating]
 NCtDsetGrp: TypeAlias = Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group]
 NCtVar: TypeAlias = netCDF4._netCDF4.Variable
 
+_NC_FMT = list(netCDF4._netCDF4._format_dict.keys())
+
 # Climate and Forecast Convention global attributes
 _STANDARD_GLOBAL_ATTR = [
     "title", "institution", "source", "history", "references", "comments",
@@ -362,7 +364,7 @@ def ncgen(filename: str,
         else:
             msg = f"NetCDF file already exists: {filename}"
             raise OSError(msg)
-    if nc_format not in netCDF4._netCDF4._format_dict:
+    if nc_format not in _NC_FMT:
         msg = f"{nc_format} not a valid netCDF4 module format"
         raise ValueError(msg)
     if isinstance(nc_config, dict):
