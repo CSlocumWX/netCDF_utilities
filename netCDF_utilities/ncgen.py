@@ -451,10 +451,11 @@ def ncgen(filename: str,
 
         for attr in data.get("global_attributes", []):
             setattr(nc_fid, attr, data["global_attributes"][attr])
-        for groupname in nc_config_dict.get("groups", []):
-            group = nc_fid.createGroup(groupname)
-            _add_to_group(group, data["groups"][groupname],
-                          nc_config_dict["groups"][groupname], nc_format)
+        if "groups" in nc_config_dict:
+            for groupname in nc_config_dict["groups"]:
+                group = nc_fid.createGroup(groupname)
+                _add_to_group(group, data["groups"][groupname],
+                              nc_config_dict["groups"][groupname], nc_format)
         else:
             _add_to_group(nc_fid, data, nc_config_dict, nc_format)
     if return_instance:
