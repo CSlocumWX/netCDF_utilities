@@ -7,7 +7,6 @@ _STANDARD_GLOBAL_ATTR : list
     List of the CF complaint NetCDF standard global attributes
 """
 # Standard library
-from __future__ import division, print_function, absolute_import
 import os
 import json
 import warnings
