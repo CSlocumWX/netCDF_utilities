@@ -176,7 +176,7 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
         The NetCDF format.
     """
     def _add_attribute(obj: NCtVar, attribute: str,
-                       attribute_value: Any, dtype: npt.DTypeLike):
+                       attribute_value: Any, dtype: npt.DTypeLike) -> None:
         """
         Add attribute.
 
