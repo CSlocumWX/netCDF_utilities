@@ -268,15 +268,14 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
             assert all(dimname in nc_dims for dimname in dimensions), \
                 "One of the dimensions for %s does not exist" % varname
             dimensions = (dimensions)
+        elif dtype == _CHAR_TYPE:
+            size = len(data[varname])
+            dimname = "strdim%02d" % size
+            if dimname not in nc_vars:
+                group.createDimension(dimname, size)
+            dimensions = (dimname, )
         else:
-            if dtype == _CHAR_TYPE:
-                size = len(data[varname])
-                dimname = "strdim%02d" % size
-                if dimname not in nc_vars:
-                    group.createDimension(dimname, size)
-                dimensions = (dimname, )
-            else:
-                dimensions = None
+            dimensions = None
         nc_var = _create_var(group,
                              varname=varname,
                              datatype=dtype,
