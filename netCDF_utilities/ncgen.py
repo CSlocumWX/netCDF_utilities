@@ -95,7 +95,7 @@ def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
 
     Parameters
     ----------
-    unpacked_value : array-like
+    unpacked_value : array_like
         The unpacked data (e.g., actual_range).
     scale_factor : float
         The value to scale with during packing.
@@ -104,7 +104,7 @@ def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
 
     Returns
     -------
-    array-like
+    array_like
         The value that has been packed and unpacked.
     """
     # To avoid introducing a bias into the unpacked values due to truncation
@@ -113,9 +113,8 @@ def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
     packed_value = np.rint(
         (np.asarray(unpacked_value) - add_offset) / scale_factor)
     # The unpacked data set to the default unpacked data type
-    new_unpacked_value = (packed_value * scale_factor +
-                          add_offset).astype(_AttrUnpackDtype)
-    return new_unpacked_value
+    return (packed_value * scale_factor +
+            add_offset).astype(_AttrUnpackDtype)
 
 
 def _create_var(nc_fid: NCtDsetGrp,
@@ -134,9 +133,9 @@ def _create_var(nc_fid: NCtDsetGrp,
         Variable name.
     datatype : str
         Variable date type.
-    dimensions : array-like, optional
+    dimensions : array_like, optional
         Variable dimensions (must already exist).
-    attributes : array-like, optional
+    attributes : array_like, optional
         Variable attributes including fill_value and compression.
 
     Returns
@@ -153,9 +152,8 @@ def _create_var(nc_fid: NCtDsetGrp,
             key: value
             for key, value in attributes.items() if key in _NC4_OPTIONS
         }
-    variable = nc_fid.createVariable(varname, datatype, dimensions,
-                                     **attributes)
-    return variable
+    return nc_fid.createVariable(varname, datatype, dimensions,
+                                 **attributes)
 
 
 def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
@@ -412,6 +410,5 @@ def ncgen(filename: str,
         else:
             _add_to_group(nc_fid, data, nc_config_dict, nc_format)
     if return_instance:
-        nc_fid = netCDF4.Dataset(filename, mode='a')
-        return nc_fid
+        return netCDF4.Dataset(filename, mode='a')
     return
