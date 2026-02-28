@@ -28,29 +28,75 @@ _NC_FMT = list(netCDF4._netCDF4._format_dict.keys())
 
 # Climate and Forecast Convention global attributes
 _STANDARD_GLOBAL_ATTR = [
-    "title", "institution", "source", "history", "references", "comments",
+    "title",
+    "institution",
+    "source",
+    "history",
+    "references",
+    "comments",
     "Conventions",
 ]
 # Attribute Convention for Data Discovery (ACDD) attributes
 _ACDD_GLOBAL_ATTR = [
-    "summary", "id", "naming_authority", "source", "processing_level",
-    "acknowledgment", "license", "standard_name_vocabulary", "date_created",
-    "creator_name", "creator_email", "creator_url", "project", "publisher_name",
-    "publisher_email", "publisher_url", "geospatial_bounds",
-    "geospatial_bounds_crs", "geospatial_bounds_vertical_crs",
-    "geospatial_lat_min", "geospatial_lat_max", "geospatial_lon_min",
-    "geospatial_lon_max", "geospatial_vertical_min", "geospatial_vertical_max",
-    "geospatial_vertical_positive", "time_coverage_start", "time_coverage_end",
-    "time_coverage_duration", "time_coverage_resolution", "creator_type",
-    "creator_institution", "publisher_type", "publisher_institution", "program",
-    "contributor_name", "contributor_role", "geospatial_lat_units",
-    "geospatial_lat_resolution", "geospatial_lon_units",
-    "geospatial_lon_resolution", "geospatial_vertical_units",
-    "geospatial_vertical_resolution", "date_modified", "date_issued",
-    "date_metadata_modified", "product_version", "keywords_vocabulary",
-    "platform", "platform_vocabulary", "instrument", "instrument_vocabulary",
-    "cdm_data_type", "metadata_link", "keywords", "keyword_vocabulary",
-    "contributor_url", "contributor_type", "contributor_institution",
+    "summary",
+    "id",
+    "naming_authority",
+    "source",
+    "processing_level",
+    "acknowledgment",
+    "license",
+    "standard_name_vocabulary",
+    "date_created",
+    "creator_name",
+    "creator_email",
+    "creator_url",
+    "project",
+    "publisher_name",
+    "publisher_email",
+    "publisher_url",
+    "geospatial_bounds",
+    "geospatial_bounds_crs",
+    "geospatial_bounds_vertical_crs",
+    "geospatial_lat_min",
+    "geospatial_lat_max",
+    "geospatial_lon_min",
+    "geospatial_lon_max",
+    "geospatial_vertical_min",
+    "geospatial_vertical_max",
+    "geospatial_vertical_positive",
+    "time_coverage_start",
+    "time_coverage_end",
+    "time_coverage_duration",
+    "time_coverage_resolution",
+    "creator_type",
+    "creator_institution",
+    "publisher_type",
+    "publisher_institution",
+    "program",
+    "contributor_name",
+    "contributor_role",
+    "geospatial_lat_units",
+    "geospatial_lat_resolution",
+    "geospatial_lon_units",
+    "geospatial_lon_resolution",
+    "geospatial_vertical_units",
+    "geospatial_vertical_resolution",
+    "date_modified",
+    "date_issued",
+    "date_metadata_modified",
+    "product_version",
+    "keywords_vocabulary",
+    "platform",
+    "platform_vocabulary",
+    "instrument",
+    "instrument_vocabulary",
+    "cdm_data_type",
+    "metadata_link",
+    "keywords",
+    "keyword_vocabulary",
+    "contributor_url",
+    "contributor_type",
+    "contributor_institution",
     "contributor_email",
 ]
 
@@ -74,7 +120,10 @@ _NC4_OPTIONS = [
 ]
 _NOT_ATTRS = ["size", "dtype", "dat", "dim", "var"] + _NC4_OPTIONS
 _PACK_ATTRS = [
-    "add_offset", "scale_factor", "least_significant_digit", "actual_range",
+    "add_offset",
+    "scale_factor",
+    "least_significant_digit",
+    "actual_range",
 ]
 
 # Tuples of types
@@ -114,8 +163,7 @@ def _pack_unpack(unpacked_value: npt.ArrayLike, scale_factor: Number,
     packed_value = np.rint(
         (np.asarray(unpacked_value) - add_offset) / scale_factor)
     # The unpacked data set to the default unpacked data type
-    return (packed_value * scale_factor +
-            add_offset).astype(_AttrUnpackDtype)
+    return (packed_value * scale_factor + add_offset).astype(_AttrUnpackDtype)
 
 
 def _create_var(nc_fid: NCtDsetGrp,
@@ -153,8 +201,7 @@ def _create_var(nc_fid: NCtDsetGrp,
             key: value
             for key, value in attributes.items() if key in _NC4_OPTIONS
         }
-    return nc_fid.createVariable(varname, datatype, dimensions,
-                                 **attributes)
+    return nc_fid.createVariable(varname, datatype, dimensions, **attributes)
 
 
 def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
@@ -175,8 +222,8 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
     nc_format : str
         The NetCDF format.
     """
-    def _add_attribute(obj: NCtVar, attribute: str,
-                       attribute_value: Any, dtype: npt.DTypeLike) -> None:
+    def _add_attribute(obj: NCtVar, attribute: str, attribute_value: Any,
+                       dtype: npt.DTypeLike) -> None:
         """
         Add attribute.
 
@@ -309,7 +356,8 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
                         data_entry = np.array(data_entry.data)
                     else:
                         data_entry = np.ma.array(data_entry)
-                        if fill_value is not None and hasattr(data_entry, "fill_value"):
+                        if fill_value is not None and \
+                                hasattr(data_entry, "fill_value"):
                             data_entry.fill_value = fill_value
                     group.variables[varname][:] = data_entry
                 else:
