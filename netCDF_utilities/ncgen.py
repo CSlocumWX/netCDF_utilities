@@ -354,14 +354,24 @@ def ncgen(filename: str,
     -------
     netCDF4.Dataset or None
         Dataset instance if return_instance = True.
+
+    Raises
+    ------
+    OSError
+        * If the file exists and clobber=False.
+        * The configuratio file type not supported.
+    ValueError
+        Not a valid netCDF4 module format.
     """
     if os.path.exists(filename):
         if clobber:
             os.remove(filename)
         else:
-            raise OSError("NetCDF file already exists: %s" % filename)
+            msg = f"NetCDF file already exists: {filename}"
+            raise OSError(msg)
     if nc_format not in netCDF4._netCDF4._format_dict:
-        raise ValueError(nc_format + " not a valid netCDF4 module format")
+        msg = f"{nc_format} not a valid netCDF4 module format"
+        raise ValueError(msg)
     if isinstance(nc_config, dict):
         nc_config_dict = nc_config
     else:
@@ -373,17 +383,15 @@ def ncgen(filename: str,
             with open(nc_config, mode="r", encoding="utf-8") as fid:
                 nc_config_dict = toml.load(fid, _dict=OrderedDict)
         else:
-            raise OSError(
-                "The following file extension for the configuration file is not supported: "
-                + ext)
+            msg = f"The following file extension for the configuration file is not supported: {ext}"
+            raise OSError(msg)
     with netCDF4.Dataset(filename, mode="w", clobber=clobber,
                          format=nc_format) as nc_fid:
         nc_attrs = nc_config_dict["global_attributes"]
         for global_attr in nc_attrs:
             if global_attr not in _STANDARD_GLOBAL_ATTR + _ACDD_GLOBAL_ATTR:
-                warnings.warn(
-                    "%s not in list of standard global attributes or ACDD" %
-                    global_attr)
+                msg = f"{global_attr} not in list of standard global attributes or ACDD"
+                warnings.warn(msg)
             setattr(nc_fid, global_attr, nc_attrs[global_attr])
         if hasattr(nc_fid, "date_created"):
             date_created = nc_fid.date_created
