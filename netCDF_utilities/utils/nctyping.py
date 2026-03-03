@@ -3,8 +3,8 @@
 from typing import Union
 
 # Third party imports
-import numpy as np
 import netCDF4
+import numpy as np
 from typing_extensions import TypeAlias
 
 Number = Union[int, float, np.integer, np.floating]

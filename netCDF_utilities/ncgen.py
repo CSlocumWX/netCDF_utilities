@@ -7,21 +7,21 @@ _STANDARD_GLOBAL_ATTR : list
     List of the CF complaint NetCDF standard global attributes
 """
 # Standard library imports
-import os
-import json
-import warnings
 import datetime
+import json
+import os
+import warnings
 from collections import OrderedDict
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 
 # Third party imports
-import toml
+import netCDF4
 import numpy as np
 import numpy.typing as npt
-import netCDF4
+import toml
 
 # Local folder imports
-from .utils.nctyping import Number, NCtDsetGrp, NCtVar
+from .utils.nctyping import NCtDsetGrp, NCtVar, Number
 
 _NC_FMT = list(netCDF4._netCDF4._format_dict.keys())
 

@@ -1,7 +1,7 @@
 """Script to process StructMetadata.0 from a HDFEOS file."""
 # Standard library imports
-import re
 import contextlib
+import re
 from collections import OrderedDict
 from typing import Any
 
