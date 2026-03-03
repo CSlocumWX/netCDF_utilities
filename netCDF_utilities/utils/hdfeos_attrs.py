@@ -54,22 +54,22 @@ def ttree_to_dict(ttree, level=0):
     for i in range(len(ttree)):
         current = ttree[i]
         try:
-            next_level = ttree[i+1]['level']
+            next_level = ttree[i+1]["level"]
         except:
             next_level = -1
         # Edge cases
-        if current['level'] > level:
+        if current["level"] > level:
             continue
-        if current['level'] < level:
+        if current["level"] < level:
             return result
         # Recursion
         if next_level == level:
-            insert_or_append(result, current['key'], current['value'])
+            insert_or_append(result, current["key"], current["value"])
         elif next_level > level:
             rr = ttree_to_dict(ttree[i+1:], level=next_level)
-            insert_or_append(result, current['key'], rr)
+            insert_or_append(result, current["key"], rr)
         else:
-            insert_or_append(result, current['key'], current['value'])
+            insert_or_append(result, current["key"], current["value"])
             return result
     return result
 
@@ -90,15 +90,15 @@ def hdfeos_attrs(ncid):
         a dictionary of the global attributes
     """
     attrs = []
-    for line in getattr(ncid, 'StructMetadata.0').split('\n'):
+    for line in getattr(ncid, "StructMetadata.0").split("\n"):
         if line and "END" not in line:
             level = line.count("\t")
             item = line.strip("\t").split("=")
             key = item[0]
             if len(item) == 2:
-                attr = re.sub(r'[()"\s+]', '', item[1])
-                if ',' in attr:
-                    attr = attr.split(',')
+                attr = re.sub(r"""[()"\s+]""", "", item[1])
+                if "," in attr:
+                    attr = attr.split(",")
                 with contextlib.suppress(ValueError):
                     attr = np.float32(attr).tolist()
                 if "GROUP" in key or "OBJECT" in key:
