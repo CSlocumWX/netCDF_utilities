@@ -2,8 +2,12 @@
 Script to process StructMetadata.0 from a HDFEOS file
 and return a Python dictionary
 """
+# Standard library imports
 import re
+import contextlib
 from collections import OrderedDict
+
+# Third party imports
 import numpy as np
 
 __author__ = "Christopher Slocum"
@@ -95,10 +99,8 @@ def hdfeos_attrs(ncid):
                 attr = re.sub(r'[()"\s+]', '', item[1])
                 if ',' in attr:
                     attr = attr.split(',')
-                try:
-                    attr = np.float_(attr).tolist()
-                except ValueError:
-                    pass
+                with contextlib.suppress(ValueError):
+                    attr = np.float32(attr).tolist()
                 if "GROUP" in key or "OBJECT" in key:
                     pair = (attr, None)
                 else:
