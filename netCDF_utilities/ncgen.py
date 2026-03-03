@@ -221,6 +221,7 @@ def _add_to_group(group: NCtDsetGrp, data: dict, config: dict,
     nc_format : str
         The NetCDF format.
     """
+
     def _add_attribute(obj: NCtVar, attribute: str, attribute_value: Any,
                        dtype: npt.DTypeLike) -> None:
         """
