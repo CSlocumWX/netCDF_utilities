@@ -2,10 +2,8 @@
 # Standard library imports
 from typing import Tuple
 
-# Third party imports
-from .utils.hdfeos_attrs import hdfeos_attrs
-
 # Local folder imports
+from .utils.hdfeos_attrs import hdfeos_attrs
 from .utils.nctyping import NCtDsetGrp
 
 
