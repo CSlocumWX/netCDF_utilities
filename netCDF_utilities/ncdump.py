@@ -1,17 +1,16 @@
-"""
-Outputs NetCDF metadata
-"""
-from __future__ import division, print_function, absolute_import
-from typing import Tuple, Union
-from typing_extensions import TypeAlias
-import netCDF4
-from netCDF_utilities.utils.hdfeos_attrs import hdfeos_attrs
+"""Outputs NetCDF metadata."""
+# Standard library imports
+from typing import Tuple
 
-NCtDsetGrp: TypeAlias = Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group]
+# Third party imports
+from .utils.hdfeos_attrs import hdfeos_attrs
+
+# Local folder imports
+from .utils.nctyping import NCtDsetGrp
 
 
 def ncdump(nc_fid: NCtDsetGrp, verb: bool = True) -> Tuple[list, list, list]:
-    '''
+    """
     Get NetCDF metadata.
 
     ncdump outputs dimensions, variables and their attribute information.
@@ -21,27 +20,28 @@ def ncdump(nc_fid: NCtDsetGrp, verb: bool = True) -> Tuple[list, list, list]:
     Parameters
     ----------
     nc_fid : netCDF4.Dataset
-        A netCDF4 dateset object
+        A netCDF4 dateset object.
     verb : Boolean
-        whether or not nc_attrs, nc_dims, and nc_vars are printed
+        Whether or not nc_attrs, nc_dims, and nc_vars are printed.
 
     Returns
     -------
     nc_attrs : list
-        A Python list of the NetCDF file global attributes
+        A Python list of the NetCDF file global attributes.
     nc_dims : list
-        A Python list of the NetCDF file dimensions
+        A Python list of the NetCDF file dimensions.
     nc_vars : list
-        A Python list of the NetCDF file variables
-    '''
-    def print_ncattr(key):
+        A Python list of the NetCDF file variables.
+    """
+
+    def print_ncattr(key: str) -> None:
         """
-        Prints the NetCDF file attributes for a given key
+        Print the NetCDF file attributes for a given key.
 
         Parameters
         ----------
-        key : unicode
-            a valid netCDF4.Dataset.variables key
+        key : str
+            A valid netCDF4.Dataset.variables key.
         """
         try:
             print("\t\ttype:", repr(nc_fid.variables[key].dtype))
