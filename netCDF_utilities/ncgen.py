@@ -460,4 +460,3 @@ def ncgen(filename: str,
             _add_to_group(nc_fid, data, nc_config_dict, nc_format)
     if return_instance:
         return netCDF4.Dataset(filename, mode="a")
-    return
