@@ -6,23 +6,22 @@ Attributes
 _STANDARD_GLOBAL_ATTR : list
     List of the CF complaint NetCDF standard global attributes
 """
-# Standard library
+# Standard library imports
 import os
 import json
 import warnings
 import datetime
 from collections import OrderedDict
 from typing import Optional, Union, Any
-from typing_extensions import TypeAlias
-# community packages
+
+# Third party imports
 import toml
 import numpy as np
 import numpy.typing as npt
 import netCDF4
 
-Number = Union[int, float, np.integer, np.floating]
-NCtDsetGrp: TypeAlias = Union[netCDF4._netCDF4.Dataset, netCDF4._netCDF4.Group]
-NCtVar: TypeAlias = netCDF4._netCDF4.Variable
+# Local folder imports
+from .utils.nctyping import Number, NCtDsetGrp, NCtVar
 
 _NC_FMT = list(netCDF4._netCDF4._format_dict.keys())
 
