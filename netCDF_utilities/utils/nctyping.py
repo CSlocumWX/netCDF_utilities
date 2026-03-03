@@ -1,6 +1,6 @@
 """The custom typing hints used."""
 # Standard library imports
-from typing import Union, Any
+from typing import Union
 
 # Third party imports
 import numpy as np
