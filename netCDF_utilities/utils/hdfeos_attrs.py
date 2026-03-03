@@ -1,14 +1,15 @@
-"""
-Script to process StructMetadata.0 from a HDFEOS file
-and return a Python dictionary
-"""
+"""Script to process StructMetadata.0 from a HDFEOS file."""
 # Standard library imports
 import re
 import contextlib
 from collections import OrderedDict
+from typing import Any
 
 # Third party imports
 import numpy as np
+
+# Local folder imports
+from .nctyping import NCtDsetGrp
 
 __author__ = "Christopher Slocum"
 __copyright__ = "Copyright 2018, Christopher Slocum"
@@ -16,19 +17,21 @@ __license__ = "BSD 3-Clause"
 __email__ = "Christopher.Slocum@colostate.edu"
 
 
-def insert_or_append(dictionary, key, value):
+def insert_or_append(dictionary: dict, key: str, value: Any) -> None:
     """
+    Insert or append key value pair.
+
     Insert a value in dict at key if one does not exist
-    Otherwise, convert value to list and append
+    Otherwise, convert value to list and append.
 
     Parameters
     ----------
     dictionary : dict
-        dictionary to insert or append to
+        Dictionary to insert or append to.
     key : str
-        the dictionary key
+        The dictionary key.
     value
-        the value to be added to the dictionary
+        The value to be added to the dictionary.
     """
     if key in dictionary:
         if not isinstance(dictionary[key], list):
@@ -39,16 +42,21 @@ def insert_or_append(dictionary, key, value):
         dictionary[key] = value
 
 
-def ttree_to_dict(ttree, level=0):
+def ttree_to_dict(ttree: list[dict], level: int=0) -> dict:
     """
-    tabular tree to dictionary
+    Return tabular tree to dictionary.
 
     Parameters
     ----------
     ttree : list of dictionaries
-        tabular tree
-    level : int, optional
-        used in recursion
+        The tabular tree.
+    level : int, default=0
+        The level value used in recursion.
+
+    Returns
+    -------
+    dict
+        The dictionary from tabular tree.
     """
     result = OrderedDict()
     for i in range(len(ttree)):
@@ -74,20 +82,22 @@ def ttree_to_dict(ttree, level=0):
     return result
 
 
-def hdfeos_attrs(ncid):
+def hdfeos_attrs(ncid: NCtDsetGrp) -> dict:
     """
-    Get and process StructMetadata.0 string
-    from a HDFEOS file read by netCDF4-python
+    Get StructMetadata.0 string.
+
+    This function reads the StructMetadata.0 string
+    from a HDFEOS file read by netCDF4-python.
 
     Parameters
     ----------
     ncid : object
-        an instance of the netCDF4 Dataset class
+        An instance of the netCDF4 Dataset class.
 
     Returns
     -------
-    attrs : dict
-        a dictionary of the global attributes
+    dict
+        A dictionary of the global attributes.
     """
     attrs = []
     for line in getattr(ncid, "StructMetadata.0").split("\n"):
