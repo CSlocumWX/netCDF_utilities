@@ -1,13 +1,10 @@
 """Outputs NetCDF metadata."""
-# Standard library imports
-from typing import Tuple
-
 # Local folder imports
 from .utils.hdfeos_attrs import hdfeos_attrs
 from .utils.nctyping import NCtDsetGrp
 
 
-def ncdump(nc_fid: NCtDsetGrp, verb: bool = True) -> Tuple[list, list, list]:
+def ncdump(nc_fid: NCtDsetGrp, verb: bool = True) -> tuple[list, list, list]:
     """
     Get NetCDF metadata.
 
